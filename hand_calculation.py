@@ -1,9 +1,18 @@
 import sys
 import time
 import numpy as np
+from cozmo import *
+
 import hand_tracking_module as htm
 import cozmo
 from cozmo.objects import LightCube1Id, LightCube2Id, LightCube3Id
+
+
+async def on_cube_tapped(event, *, obj, tap_count, tap_duration, **kw):
+    cube_tapped = obj.__getattribute__('object_id')
+    print(cube_tapped)
+    return cube_tapped
+    # handler = robot.Robot.add_event_handler(cozmo.objects.EvtObjectTapped, on_cube_tapped)
 
 
 def hand_detection(robot: cozmo.robot.Robot):
@@ -86,19 +95,8 @@ def hand_detection(robot: cozmo.robot.Robot):
         sys.exit()
 
 
-def cube_tapped(robot: cozmo.robot.Robot):
-
-    if cozmo.objects.EvtObjectTapped.obj == robot.world.get_light_cube(LightCube1Id):
-        return robot.world.get_light_cube(LightCube1Id)
-
-    elif cozmo.objects.EvtObjectTapped.obj == robot.world.get_light_cube(LightCube2Id):
-        return robot.world.get_light_cube(LightCube2Id)
-
-    elif cozmo.objects.EvtObjectTapped.obj == robot.world.get_light_cube(LightCube3Id):
-        return robot.world.get_light_cube(LightCube3Id)
-
-
 def cozmo_program(robot: cozmo.robot.Robot):
+    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped, on_cube_tapped)  # Essayer de le mettre autre part
     cube1 = robot.world.get_light_cube(LightCube1Id)
     cube2 = robot.world.get_light_cube(LightCube2Id)
     cube3 = robot.world.get_light_cube(LightCube3Id)
@@ -115,21 +113,22 @@ def cozmo_program(robot: cozmo.robot.Robot):
     finalResult = -1
 
     firstNumber = hand_detection(robot)
+    robot.say_text(f'{finalResult}').wait_for_completed()
 
-    if cube_tapped(robot) == cube1:
+
+'''
+    if cube_tapped == cube1.__getattribute__('object_id'):
         print("Cube1 tapped")
         finalResult = firstNumber + hand_detection(robot)
 
-    if cube_tapped(robot) == cube2:
+    if handler.__getattribute__('object_id') == 2:
         print("Cube2 tapped")
         finalResult = firstNumber - hand_detection(robot)
 
-    if cube_tapped(robot) == cube3:
+    if handler.__getattribute__('object_id') == 3:
         print("Cube3 tapped")
         finalResult = firstNumber * hand_detection(robot)
-
-    robot.say_text(f'{finalResult}').wait_for_completed()
-
+'''
 
 cozmo.robot.Robot.drive_off_charger_on_connect = False
 cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
