@@ -12,12 +12,15 @@ def hand_detection(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     # On passe la caméra en couleur
     robot.camera.color_image_enabled = True
+    # On règle l'angle de la tête de Cozmo
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE).wait_for_completed()
 
     try:
         detector = htm.HandDetector(detectionCon=0.75)
         tipIds = [4, 8, 12, 16, 20]
         hand = -1
         finalTotal = -2
+        nbNoHand = 0
 
         while hand != finalTotal:
 
@@ -71,6 +74,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                         hand = totalFingers
                     else:
                         finalTotal = totalFingers
+                        robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabHappy).wait_for_completed()
                         return finalTotal
 
                     robot.say_text(f'{totalFingers}').wait_for_completed()
@@ -78,6 +82,13 @@ def hand_detection(robot: cozmo.robot.Robot):
 
                 else:
                     print("No hand detected")
+                    nbNoHand += 1
+                    robot.play_anim(name="anim_mm_thinking", ignore_head_track=True).wait_for_completed()
+                    if nbNoHand == 20:
+                        nbNoHand = 0
+                        robot.say_text("Je ne te vois pas").wait_for_completed()
+                        robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
+                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE).wait_for_completed()
 
             # refresh tous les 100 ms
             time.sleep(0.1)
@@ -88,7 +99,8 @@ def hand_detection(robot: cozmo.robot.Robot):
 
 
 def cozmo_program(robot: cozmo.robot.Robot):
-    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped, cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
+    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
+                                      cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
     cube1 = robot.world.get_light_cube(LightCube1Id)
     cube2 = robot.world.get_light_cube(LightCube2Id)
     cube3 = robot.world.get_light_cube(LightCube3Id)
@@ -107,7 +119,6 @@ def cozmo_program(robot: cozmo.robot.Robot):
     firstNumber = hand_detection(robot)
     print(firstNumber)
 
-
     print('Jattend que tu tapes')
     robot.world.wait_for(cozmo.objects.EvtObjectTapped)
     if cb.Cubes.cube_tapped == cube1.__getattribute__('object_id'):
@@ -124,6 +135,7 @@ def cozmo_program(robot: cozmo.robot.Robot):
 
     print(finalResult)
     robot.say_text(f'{finalResult}').wait_for_completed()
+
 
 cozmo.robot.Robot.drive_off_charger_on_connect = False
 cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
