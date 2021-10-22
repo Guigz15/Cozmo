@@ -1,24 +1,10 @@
 import sys
 import time
 import numpy as np
-from cozmo import *
-
 import hand_tracking_module as htm
+import cubes as cb
 import cozmo
 from cozmo.objects import LightCube1Id, LightCube2Id, LightCube3Id
-
-
-class Cubes:
-    cube_tapped = 0
-    robot = cozmo.robot.Robot
-
-    def __init__(self, cube, robot):
-        self.cube_tapped = cube
-        self.robot = robot
-
-    async def on_cube_tapped(event, **kw):
-        Cubes.cube_tapped = event.__getattribute__('obj').__getattribute__('object_id')
-        # print(event.__getattribute__('obj').__getattribute__('object_id'))
 
 
 def hand_detection(robot: cozmo.robot.Robot):
@@ -28,7 +14,7 @@ def hand_detection(robot: cozmo.robot.Robot):
     robot.camera.color_image_enabled = True
 
     try:
-        detector = htm.handDetector(detectionCon=0.75)
+        detector = htm.HandDetector(detectionCon=0.75)
         tipIds = [4, 8, 12, 16, 20]
         hand = -1
         finalTotal = -2
@@ -102,7 +88,7 @@ def hand_detection(robot: cozmo.robot.Robot):
 
 
 def cozmo_program(robot: cozmo.robot.Robot):
-    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped, Cubes.on_cube_tapped)  # Essayer de le mettre autre part
+    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped, cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
     cube1 = robot.world.get_light_cube(LightCube1Id)
     cube2 = robot.world.get_light_cube(LightCube2Id)
     cube3 = robot.world.get_light_cube(LightCube3Id)
@@ -124,17 +110,18 @@ def cozmo_program(robot: cozmo.robot.Robot):
 
     print('Jattend que tu tapes')
     robot.world.wait_for(cozmo.objects.EvtObjectTapped)
-    if Cubes.cube_tapped == cube1.__getattribute__('object_id'):
+    if cb.Cubes.cube_tapped == cube1.__getattribute__('object_id'):
         print("Cube1 tapped")
         finalResult = firstNumber + hand_detection(robot)
 
-    if Cubes.cube_tapped == cube2.__getattribute__('object_id'):
+    if cb.Cubes.cube_tapped == cube2.__getattribute__('object_id'):
         print("Cube2 tapped")
         finalResult = firstNumber - hand_detection(robot)
 
-    if Cubes.cube_tapped == cube3.__getattribute__('object_id'):
+    if cb.Cubes.cube_tapped == cube3.__getattribute__('object_id'):
         print("Cube3 tapped")
         finalResult = firstNumber * hand_detection(robot)
+
     print(finalResult)
     robot.say_text(f'{finalResult}').wait_for_completed()
 
