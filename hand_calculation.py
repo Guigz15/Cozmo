@@ -13,7 +13,7 @@ def hand_detection(robot: cozmo.robot.Robot):
     # On passe la caméra en couleur
     robot.camera.color_image_enabled = True
     # On règle l'angle de la tête de Cozmo
-    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE).wait_for_completed()
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/2).wait_for_completed()
 
     try:
         detector = htm.HandDetector(detectionCon=0.75)
@@ -88,7 +88,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                         nbNoHand = 0
                         robot.say_text("Je ne te vois pas").wait_for_completed()
                         robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
-                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE).wait_for_completed()
+                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/2).wait_for_completed()
 
             # refresh tous les 100 ms
             time.sleep(0.1)
