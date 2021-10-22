@@ -12,6 +12,8 @@ def hand_detection(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     # On passe la caméra en couleur
     robot.camera.color_image_enabled = True
+    robot.camera.enable_auto_exposure(False)
+    robot.camera.set_manual_exposure(20, 2.5)
     # On règle l'angle de la tête de Cozmo
     robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/2).wait_for_completed()
 
