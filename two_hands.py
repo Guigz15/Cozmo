@@ -232,9 +232,9 @@ def hand_detection(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     # On passe la caméra en couleur
     robot.camera.color_image_enabled = True
-    robot.camera.enable_auto_exposure(False)
-    robot.camera.set_manual_exposure(2, 2.5)
-    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE).wait_for_completed()
+    #robot.camera.enable_auto_exposure(False)
+    #robot.camera.set_manual_exposure(2, 2.5)
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/4).wait_for_completed()
 
     try:
         hand = -1
@@ -278,7 +278,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                         nbNoHand = 0
                         # robot.say_text("Je ne te vois pas").wait_for_completed()
                         robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
-                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/4).wait_for_completed()
 
     # pour capter le Ctrl+C et terminer proprement
     except KeyboardInterrupt:
@@ -308,10 +308,10 @@ def cozmo_program(robot: cozmo.robot.Robot):
 
     print('J\'attends que tu tapes')
     robot.world.wait_for(cozmo.objects.EvtObjectTapped)
-    '''
-    if cb.Cubes.cube_tapped == cube1.__getattribute__('object_id'):
+
+    if cb.Cubes.cube_tapped_id == cube1.__getattribute__('object_id'):
         robot.say_text("plus").wait_for_completed()
-        
+
         # blinking of tapped cube 1
         for i in range(4):
             cube1.set_light_corners(cozmo.lights.red_light, cozmo.lights.off_light,
@@ -321,15 +321,13 @@ def cozmo_program(robot: cozmo.robot.Robot):
                                     cozmo.lights.off_light, cozmo.lights.red_light)
             time.sleep(0.3)
         cube1.set_lights(cozmo.lights.red_light)
-        
+
         print("Cube1 tapped")
-        
         secondNumber = hand_detection(robot)
         finalResult = firstNumber + secondNumber
-        '''
-        #robot.say_text(f'{firstNumber}' + "plus" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
+        robot.say_text(f'{firstNumber}' + "plus" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
-    if cb.Cubes.cube_tapped == cube2.__getattribute__('object_id'):
+    if cb.Cubes.cube_tapped_id == cube2.__getattribute__('object_id'):
         robot.say_text("moins").wait_for_completed()
 
         # blinking of tapped cube 2
@@ -341,7 +339,7 @@ def cozmo_program(robot: cozmo.robot.Robot):
                                     cozmo.lights.off_light, cozmo.lights.blue_light)
             time.sleep(0.3)
         cube2.set_lights(cozmo.lights.blue_light)
-
+        
         print("Cube2 tapped")
         secondNumber = hand_detection(robot)
         finalResult = firstNumber - secondNumber
@@ -351,9 +349,9 @@ def cozmo_program(robot: cozmo.robot.Robot):
         else:
             robot.say_text(f'{firstNumber}' + "moins" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
-    if cb.Cubes.cube_tapped == cube3.__getattribute__('object_id'):
+    if cb.Cubes.cube_tapped_id == cube3.__getattribute__('object_id'):
         robot.say_text("fois").wait_for_completed()
-
+        
         # blinking of tapped cube 3
         for i in range(4):
             cube3.set_light_corners(cozmo.lights.green_light, cozmo.lights.off_light,
@@ -363,7 +361,7 @@ def cozmo_program(robot: cozmo.robot.Robot):
                                     cozmo.lights.off_light, cozmo.lights.green_light)
             time.sleep(0.3)
         cube3.set_lights(cozmo.lights.green_light)
-
+        
         print("Cube3 tapped")
         secondNumber = hand_detection(robot)
         finalResult = firstNumber * secondNumber
