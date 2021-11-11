@@ -5,6 +5,7 @@ import numpy as np
 import cubes as cb
 import mediapipe as mp
 import matplotlib.pyplot as plt
+from PIL import ImageOps
 from cozmo.objects import LightCube1Id, LightCube2Id, LightCube3Id
 
 # Initialize the mediapipe hands class.
@@ -19,7 +20,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 
 def detectHandsLandmarks(image, hands, draw=True, display=True):
-    '''
+    """
     This function performs hands landmarks detection on an image.
     Args:
         image:   The input image with prominent hand(s) whose landmarks needs to be detected.
@@ -30,7 +31,7 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
     Returns:
         output_image: A copy of input image with the detected hands landmarks drawn if it was specified.
         results:      The output of the hands landmarks detection on the input image.
-    '''
+    """
 
     # Create a copy of the input image to draw landmarks on.
     output_image = image.copy()
@@ -76,7 +77,7 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
 
 
 def countFingers(image, results, draw=True, display=True):
-    '''
+    """
     This function will count the number of fingers up for each hand in the image.
     Args:
         image:   The image of the hands on which the fingers counting is required to be performed.
@@ -88,7 +89,7 @@ def countFingers(image, results, draw=True, display=True):
         output_image:     A copy of the input image with the fingers count written, if it was specified.
         fingers_statuses: A dictionary containing the status (i.e., open or close) of each finger of both hands.
         count:            A dictionary containing the count of the fingers that are up, of both hands.
-    '''
+    """
 
     # Get the height and width of the input image.
     height, width, _ = image.shape
@@ -228,28 +229,43 @@ cv2.destroyAllWindows()
 
 
 def hand_detection(robot: cozmo.robot.Robot):
-    # On active le stream
+    """
+    This function will use the two above functions to count fingers on both hands with cozmo's camera.
+    Args:
+        robot:      An instance of cozmo Robot.
+    Returns:
+        finalTotal: An int that represents the counted fingers.
+    """
+
+    # Enable camera streaming
     robot.camera.image_stream_enabled = True
-    # On passe la caméra en couleur
+    # Enable color image
     robot.camera.color_image_enabled = True
-    #robot.camera.enable_auto_exposure(False)
-    #robot.camera.set_manual_exposure(2, 2.5)
-    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/4).wait_for_completed()
+    # Set cozmo's head angle
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
 
     try:
         hand = -1
         finalTotal = -2
+
+        # Times of no hand detected
         nbNoHand = 0
 
+        # To check twice the number of fingers
         while hand != finalTotal:
 
+            # Get the image of cozmo's camera
             latest_image = robot.world.latest_image
 
             if latest_image:
-                # récupération du raw
+                # Get the raw image
                 im = latest_image.raw_image
+                # Flip horizontally the image
+                im = ImageOps.mirror(im)
+                # Transform image in a numpy array
                 im = np.array(im)
 
+                # Hand landmarks process
                 frame, results = detectHandsLandmarks(im, hands_videos, display=False)
 
                 # Check if the hands landmarks in the frame are detected.
@@ -258,7 +274,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                     frame, fingers_statuses, count = countFingers(frame, results, display=False)
                     totalFingers = sum(count.values())
 
-                    # Permet de vérifier que la valeur vue par le robot est bien celle souhaitée par l'utilisateur
+                    # Check if detected number is the right number
                     if hand != totalFingers:
                         hand = totalFingers
                     else:
@@ -272,43 +288,59 @@ def hand_detection(robot: cozmo.robot.Robot):
 
                 else:
                     print("No hand detected")
+
+                    # One more no hand detected
                     nbNoHand += 1
                     robot.play_anim(name="anim_mm_thinking", ignore_head_track=True).wait_for_completed()
-                    if nbNoHand == 30:
-                        nbNoHand = 0
-                        # robot.say_text("Je ne te vois pas").wait_for_completed()
-                        robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
-                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE/4).wait_for_completed()
 
-    # pour capter le Ctrl+C et terminer proprement
+                    # If hands are not detected for a long time
+                    if nbNoHand == 50:
+                        nbNoHand = 0
+                        robot.say_text("Je ne te vois pas").wait_for_completed()
+                        robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
+                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+
+    # To detect Ctrl+C and shut down properly
     except KeyboardInterrupt:
         sys.exit()
 
 
 def cozmo_program(robot: cozmo.robot.Robot):
+    """
+    This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
+    Args:
+         robot: An instance of cozmo Robot.
+    """
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
                                       cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
     cube1 = robot.world.get_light_cube(LightCube1Id)
     cube2 = robot.world.get_light_cube(LightCube2Id)
     cube3 = robot.world.get_light_cube(LightCube3Id)
 
+    # Initialize cube one's color (red)
     if cube1 is not None:
         cube1.set_lights(cozmo.lights.red_light)
 
+    # Initialize cube two's color (blue)
     if cube2 is not None:
         cube2.set_lights(cozmo.lights.blue_light)
 
+    # Initialize cube three's color (green)
     if cube3 is not None:
         cube3.set_lights(cozmo.lights.green_light)
 
+    # The final result initialized
     finalResult = -1
 
+    # Detect the first number
     firstNumber = hand_detection(robot)
     print(firstNumber)
 
+    # Wait for any cubes tapped
     print('J\'attends que tu tapes')
     robot.world.wait_for(cozmo.objects.EvtObjectTapped)
 
+    # If cube 1 is tapped, it will make a sum
     if cb.Cubes.cube_tapped_id == cube1.__getattribute__('object_id'):
         robot.say_text("plus").wait_for_completed()
 
@@ -323,10 +355,17 @@ def cozmo_program(robot: cozmo.robot.Robot):
         cube1.set_lights(cozmo.lights.red_light)
 
         print("Cube1 tapped")
+
+        # Detect the second number
         secondNumber = hand_detection(robot)
+
+        # Make sum of two numbers detected
         finalResult = firstNumber + secondNumber
+
+        # Cozmo say the result
         robot.say_text(f'{firstNumber}' + "plus" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
+    # If cube 1 is tapped, it will make a difference
     if cb.Cubes.cube_tapped_id == cube2.__getattribute__('object_id'):
         robot.say_text("moins").wait_for_completed()
 
@@ -339,19 +378,31 @@ def cozmo_program(robot: cozmo.robot.Robot):
                                     cozmo.lights.off_light, cozmo.lights.blue_light)
             time.sleep(0.3)
         cube2.set_lights(cozmo.lights.blue_light)
-        
+
         print("Cube2 tapped")
+
+        # Detect the second number
         secondNumber = hand_detection(robot)
+
+        # Make difference of two numbers detected
         finalResult = firstNumber - secondNumber
+
+        # If result is negative
         if finalResult < 0:
+            # Make result a positive number
             finalResultNeg = finalResult * -1
-            robot.say_text(f'{firstNumber}' + "moins" + f'{secondNumber}' + "=" + "moins" + f'{finalResultNeg}').wait_for_completed()
+
+            # Cozmo say the result
+            robot.say_text(
+                f'{firstNumber}' + "moins" + f'{secondNumber}' + "=" + "moins" + f'{finalResultNeg}').wait_for_completed()
         else:
+            # Cozmo say the result
             robot.say_text(f'{firstNumber}' + "moins" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
+    # If cube 3 is tapped, it will make a multiplication
     if cb.Cubes.cube_tapped_id == cube3.__getattribute__('object_id'):
         robot.say_text("fois").wait_for_completed()
-        
+
         # blinking of tapped cube 3
         for i in range(4):
             cube3.set_light_corners(cozmo.lights.green_light, cozmo.lights.off_light,
@@ -361,14 +412,22 @@ def cozmo_program(robot: cozmo.robot.Robot):
                                     cozmo.lights.off_light, cozmo.lights.green_light)
             time.sleep(0.3)
         cube3.set_lights(cozmo.lights.green_light)
-        
+
         print("Cube3 tapped")
+
+        # Detect the second number
         secondNumber = hand_detection(robot)
+
+        # Make multiplication of two numbers
         finalResult = firstNumber * secondNumber
+
+        # Cozmo say the result
         robot.say_text(f'{firstNumber}' + "fois" + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
     print(finalResult)
 
 
+# To prevent Cozmo to drive off the charger when SDK mode enabled
 cozmo.robot.Robot.drive_off_charger_on_connect = False
-cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
+# To run the program on Cozmo
+cozmo.run_program(cozmo_program, use_viewer=True)
