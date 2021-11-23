@@ -20,7 +20,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 
 def detectHandsLandmarks(image, hands, draw=True, display=True):
-    '''
+    """
     This function performs hands landmarks detection on an image.
     Args:
         image:   The input image with prominent hand(s) whose landmarks needs to be detected.
@@ -31,7 +31,7 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
     Returns:
         output_image: A copy of input image with the detected hands landmarks drawn if it was specified.
         results:      The output of the hands landmarks detection on the input image.
-    '''
+    """
 
     # Create a copy of the input image to draw landmarks on.
     output_image = image.copy()
@@ -78,28 +78,18 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
 
 def countFingers(image, results, draw=True, display=True):
     """
-    Args:
-        image: Bonjour
-        results: Cozmo
-        draw: zver
-        display: rebverbver
-
-    Returns:
-        ebtrbtrhtyjyre
-    """
-    '''
     This function will count the number of fingers up for each hand in the image.
     Args:
-        image:   The image of the hands on which the fingers counting is required to be performed.
+        image: The image of the hands on which the fingers counting is required to be performed.
         results: The output of the hands landmarks detection performed on the image of the hands.
-        draw:    A boolean value that is if set to true the function writes the total count of fingers of the hands on the
+        draw: A boolean value that is if set to true the function writes the total count of fingers of the hands on the
                  output image.
         display: A boolean value that is if set to true the function displays the resultant image and returns nothing.
     Returns:
         output_image:     A copy of the input image with the fingers count written, if it was specified.
         fingers_statuses: A dictionary containing the status (i.e., open or close) of each finger of both hands.
         count:            A dictionary containing the count of the fingers that are up, of both hands.
-    '''
+    """
 
     # Get the height and width of the input image.
     height, width, _ = image.shape
@@ -239,13 +229,13 @@ cv2.destroyAllWindows()
 
 
 def hand_detection(robot: cozmo.robot.Robot):
-    '''
+    """
     This function will use the two above functions to count fingers on both hands with cozmo's camera.
     Args:
         robot:      An instance of cozmo Robot.
     Returns:
         finalTotal: An int that represents the counted fingers.
-    '''
+    """
 
     # Enable camera streaming
     robot.camera.image_stream_enabled = True
@@ -316,11 +306,11 @@ def hand_detection(robot: cozmo.robot.Robot):
 
 
 def cozmo_program(robot: cozmo.robot.Robot):
-    '''
+    """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
     Args:
          robot: An instance of cozmo Robot.
-    '''
+    """
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
                                       cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
     cube1 = robot.world.get_light_cube(LightCube1Id)
