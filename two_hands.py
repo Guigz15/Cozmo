@@ -73,7 +73,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                     robot.play_anim(name="anim_mm_thinking", ignore_head_track=True).wait_for_completed()
 
                     # If hands are not detected for a long time
-                    if nbNoHand == 50:
+                    if nbNoHand == 100:
                         nbNoHand = 0
                         robot.say_text("Je ne te vois pas").wait_for_completed()
                         robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
@@ -104,7 +104,7 @@ def cozmo_program(robot: cozmo.robot.Robot):
 
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
-    s = robot.world.wait_for(cozmo.objects.EvtObjectTapped)
+    robot.world.wait_for(cozmo.objects.EvtObjectTapped)
 
     operation = cubes.cube_blinking(cubes.cube_tapped_id)
 
@@ -115,6 +115,8 @@ def cozmo_program(robot: cozmo.robot.Robot):
         finalResult = firstNumber + secondNumber
     elif operation == '-':
         finalResult = firstNumber - secondNumber
+        if finalResult < 0:
+            finalResult = "moins" + str(-finalResult)
     elif operation == '*':
         finalResult = firstNumber * secondNumber
 
@@ -127,4 +129,4 @@ def cozmo_program(robot: cozmo.robot.Robot):
 # To prevent Cozmo to drive off the charger when SDK mode enabled
 cozmo.robot.Robot.drive_off_charger_on_connect = False
 # To run the program on Cozmo
-cozmo.run_program(cozmo_program, use_viewer=True)
+cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
