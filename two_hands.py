@@ -21,7 +21,7 @@ def hand_detection(robot: cozmo.robot.Robot):
     # Enable color image
     robot.camera.color_image_enabled = True
     # Set cozmo's head angle
-    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2).wait_for_completed()
 
     try:
         hand = -1
@@ -77,7 +77,7 @@ def hand_detection(robot: cozmo.robot.Robot):
                         nbNoHand = 0
                         robot.say_text("Je ne te vois pas").wait_for_completed()
                         robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
-                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2).wait_for_completed()
 
     # To detect Ctrl+C and shut down properly
     except KeyboardInterrupt:
@@ -129,4 +129,4 @@ def cozmo_program(robot: cozmo.robot.Robot):
 # To prevent Cozmo to drive off the charger when SDK mode enabled
 cozmo.robot.Robot.drive_off_charger_on_connect = False
 # To run the program on Cozmo
-cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
+cozmo.run_program(cozmo_program, use_viewer=True)
