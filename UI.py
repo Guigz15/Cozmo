@@ -5,7 +5,6 @@ import math
 import sys
 import flask_helpers
 import cozmo
-import two_hands
 
 try:
     from flask import Flask, request
@@ -13,7 +12,7 @@ except ImportError:
     sys.exit("Cannot import from flask: Do `pip3 install --user flask` to install")
 
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageOps
 except ImportError:
     sys.exit("Cannot import from PIL: Do `pip3 install --user Pillow` to install")
 
@@ -55,8 +54,6 @@ class RemoteControlCozmo:
 
         self.go_fast = 0
         self.go_slow = 0
-
-        #self.action_queue = []
 
     def handle_key(self, key_code, is_key_down):
         '''
@@ -155,6 +152,7 @@ def streaming_video(url_root):
             if remote_control_cozmo:
                 image = remote_control_cozmo.cozmo.world.latest_image
                 image = image.raw_image
+                image = ImageOps.mirror(image)
 
                 img_io = io.BytesIO()
                 image.save(img_io, 'PNG')
@@ -173,6 +171,7 @@ def serve_single_image():
         try:
             image = remote_control_cozmo.cozmo.world.latest_image
             image = image.raw_image
+
             if image:
                 return flask_helpers.serve_pil_image(image)
         except cozmo.exceptions.SDKShutdown:
