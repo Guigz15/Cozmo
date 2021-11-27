@@ -5,6 +5,9 @@ from cozmo.objects import LightCube1Id, LightCube2Id, LightCube3Id
 
 
 class Cubes:
+    """
+    This class represents the Cozmo's cubes and perform on tapped detection or blinking.
+    """
     cube_tapped_id = 0
     robot = cozmo.robot.Robot
     cube1 = None
@@ -12,6 +15,7 @@ class Cubes:
     cube3 = None
 
     def __init__(self, robot):
+
         self.robot = robot
         self.cube1 = robot.world.get_light_cube(LightCube1Id)
         self.cube2 = robot.world.get_light_cube(LightCube2Id)
@@ -30,10 +34,18 @@ class Cubes:
             self.cube3.set_lights(cozmo.lights.green_light)
 
     async def on_cube_tapped(self, **kw):
+        """
+        The function allows to get the cube object that is tapped.
+        """
         Cubes.cube_tapped_id = self.__getattribute__('obj').__getattribute__('object_id')
 
     def cube_blinking(self, id_cube_tapped):
+        """
+        This function performs cube blinking.
 
+        :param id_cube_tapped: The id of the cube tapped.
+        :return: A string that represents operators linked to the cube tapped.
+        """
         if id_cube_tapped == self.cube1.__getattribute__('object_id'):
             self.robot.say_text("plus").wait_for_completed()
 

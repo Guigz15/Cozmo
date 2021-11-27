@@ -2,9 +2,12 @@ import asyncio
 import io
 import json
 import math
+import multiprocessing
 import sys
 import flask_helpers
 import cozmo
+
+import two_hands
 
 try:
     from flask import Flask, request
@@ -225,6 +228,8 @@ def run(sdk_conn):
 
     # Turn on image receiving by the camera
     robot.camera.image_stream_enabled = True
+    # Enable color image
+    robot.camera.color_image_enabled = True
 
     flask_helpers.run_flask(flask_app)
 

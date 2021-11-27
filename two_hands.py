@@ -1,5 +1,7 @@
 import sys
 import cozmo
+
+import UI
 import hand as hd
 import time
 import numpy as np
@@ -10,10 +12,9 @@ from PIL import ImageOps
 def hand_detection(robot: cozmo.robot.Robot):
     """
     This function will use the two above functions to count fingers on both hands with cozmo's camera.
-    Args:
-        robot:      An instance of cozmo Robot.
-    Returns:
-        finalTotal: An int that represents the counted fingers.
+
+    :param robot: An instance of cozmo Robot.
+    :return: **finalTotal** - An int that represents the counted fingers.
     """
 
     # Enable camera streaming
@@ -58,11 +59,11 @@ def hand_detection(robot: cozmo.robot.Robot):
                         hand = totalFingers
                     else:
                         finalTotal = totalFingers
+                        robot.say_text(f'{totalFingers}').wait_for_completed()
                         robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabHappy,
-                                                ignore_lift_track=True).wait_for_completed()
+                                                ignore_lift_track=True, ignore_body_track=True).wait_for_completed()
                         return finalTotal
 
-                    robot.say_text(f'{totalFingers}').wait_for_completed()
                     time.sleep(2)
 
                 else:
@@ -87,8 +88,8 @@ def hand_detection(robot: cozmo.robot.Robot):
 def cozmo_program(robot: cozmo.robot.Robot):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
-    Args:
-         robot: An instance of cozmo Robot.
+
+    :param robot: An instance of cozmo Robot.
     """
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
                                       cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
