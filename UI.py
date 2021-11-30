@@ -2,11 +2,10 @@ import asyncio
 import io
 import json
 import math
-import multiprocessing
 import sys
 import flask_helpers
 import cozmo
-
+from threading import Thread
 import two_hands
 
 try:
@@ -225,6 +224,8 @@ def run(sdk_conn):
 
     global remote_control_cozmo
     remote_control_cozmo = RemoteControlCozmo(robot)
+    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot,))
+    cozmoThread.start()
 
     # Turn on image receiving by the camera
     robot.camera.image_stream_enabled = True

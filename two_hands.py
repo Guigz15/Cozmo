@@ -2,6 +2,7 @@ import sys
 import cozmo
 
 import UI
+import flask_helpers
 import hand as hd
 import time
 import numpy as np
@@ -17,10 +18,6 @@ def hand_detection(robot: cozmo.robot.Robot):
     :return: **finalTotal** - An int that represents the counted fingers.
     """
 
-    # Enable camera streaming
-    robot.camera.image_stream_enabled = True
-    # Enable color image
-    robot.camera.color_image_enabled = True
     # Set cozmo's head angle
     robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2).wait_for_completed()
 
@@ -59,6 +56,9 @@ def hand_detection(robot: cozmo.robot.Robot):
                         hand = totalFingers
                     else:
                         finalTotal = totalFingers
+                        if finalTotal == 1 and (fingers_statuses.get("RIGHT_MIDDLE") is True or fingers_statuses.get(
+                                "LEFT_MIDDLE") is True):
+                            robot.say_text("Tu veux te battre LAAAAAAA").wait_for_completed()
                         robot.say_text(f'{totalFingers}').wait_for_completed()
                         robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabHappy,
                                                 ignore_lift_track=True, ignore_body_track=True).wait_for_completed()
@@ -125,9 +125,3 @@ def cozmo_program(robot: cozmo.robot.Robot):
     robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
 
     print(finalResult)
-
-
-# To prevent Cozmo to drive off the charger when SDK mode enabled
-cozmo.robot.Robot.drive_off_charger_on_connect = False
-# To run the program on Cozmo
-cozmo.run_program(cozmo_program, use_viewer=True)
