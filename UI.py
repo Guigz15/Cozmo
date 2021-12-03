@@ -97,6 +97,19 @@ def handle_index_page():
         <head>
             <title>User Interface for Cozmo</title>
         </head>
+        <style>
+            input[type="range"] {
+                -webkit-appearance: slider-vertical;
+            }
+            
+            input[type="range"]::-webkit-slider-runnable-track {
+                height: 100%;
+                width: 22px;
+                border-radius: 10px;
+                background-color: #eee;
+                border: 2px solid #ccc;
+            }
+        </style>
         <body>
             <h1>Finger counter and operation with Cozmo</h1>
             <table>
@@ -107,12 +120,11 @@ def handle_index_page():
                     </td>
                     <td width=30></td>
                     <td valign=top>
-                        <h2>Controls:</h2>
-
+                        <h3>Cozmo's head angle</h3>
                         <br>
-                        <b>T</b> : Move Head Up<br>
-                        <b>G</b> : Move Head Down<br>
-
+                        <input type="range" id="myRange" value="0.5" min="0" max="1" step="0.01" onchange="sendHeadValue(this.value);" 
+                            oninput="sendHeadValue(this.value)">
+                        <p id="demo"></p>
                     </td>
                 </tr>
             </table>
@@ -141,6 +153,18 @@ def handle_index_page():
 
                 document.addEventListener("keydown", function(e) { handleKeyActivity(e, "keydown") } );
                 document.addEventListener("keyup",   function(e) { handleKeyActivity(e, "keyup") } );
+            </script>
+            
+            <script>
+                function updateInput(val) {
+                    document.getElementById("demo").innerHTML = val;
+                }
+                
+                function sendHeadValue(val) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
+                    xhr.send()
+                }
             </script>
         </body>
     </html>
@@ -216,6 +240,13 @@ def handle_keydown():
 def handle_keyup():
     '''Called from Javascript whenever a key is released'''
     return handle_key_event(request, is_key_down=False)
+
+
+@flask_app.route('/headAngle/<string:angleValue>', methods=['POST'])
+def headAngle(angleValue):
+    angleValue = json.loads(angleValue)
+    print('Angle value : ', angleValue)
+    return angleValue
 
 
 def run(sdk_conn):
