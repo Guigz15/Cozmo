@@ -47,7 +47,7 @@ class Cubes:
         :return: A string that represents operators linked to the cube tapped.
         """
         if id_cube_tapped == self.cube1.__getattribute__('object_id'):
-            self.robot.say_text("plus").wait_for_completed()
+            self.robot.say_text("plus", in_parallel=True).wait_for_completed()
 
             # blinking of tapped cube 1
             for i in range(4):
@@ -62,7 +62,7 @@ class Cubes:
 
         # If cube 2 is tapped, it will make a difference
         if id_cube_tapped == self.cube2.__getattribute__('object_id'):
-            self.robot.say_text("moins").wait_for_completed()
+            self.robot.say_text("moins", in_parallel=True).wait_for_completed()
 
             # blinking of tapped cube 2
             for i in range(4):
@@ -76,7 +76,7 @@ class Cubes:
             return "-"
 
         if id_cube_tapped == self.cube3.__getattribute__('object_id'):
-            self.robot.say_text("fois").wait_for_completed()
+            self.robot.say_text("fois", in_parallel=True).wait_for_completed()
 
             # blinking of tapped cube 3
             for i in range(4):

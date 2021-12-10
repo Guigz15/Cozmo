@@ -51,43 +51,9 @@ class RemoteControlCozmo:
     def __init__(self, coz):
         self.cozmo = coz
 
-        self.head_up = 0
-        self.head_down = 0
-
-        self.go_fast = 0
-        self.go_slow = 0
-
-    def handle_key(self, key_code, is_key_down):
-        '''
-        Called on any key press or release
-        Holding a key down may result in repeated handle_key calls with is_key_down==True
-        '''
-
-        # Update state of head move intent from keyboard, and if anything changed then call update_head
-        update_head = True
-        if key_code == ord('T'):
-            self.head_up = is_key_down
-        elif key_code == ord('G'):
-            self.head_down = is_key_down
-        else:
-            update_head = False
-
-        # Update head as appropriate
-        if update_head:
-            self.update_head()
-
-    def pick_speed(self, fast_speed, mid_speed, slow_speed):
-        if self.go_fast:
-            if not self.go_slow:
-                return fast_speed
-        elif self.go_slow:
-            return slow_speed
-        return mid_speed
-
-    def update_head(self):
-        head_speed = self.pick_speed(2, 1, 0.5)
-        head_vel = (self.head_up - self.head_down) * head_speed
-        self.cozmo.move_head(head_vel)
+    def update_head_angle(self, angleValue):
+        angle = cozmo.util.degrees(float(angleValue))
+        self.cozmo.set_head_angle(angle, in_parallel=True)
 
 
 @flask_app.route("/")
@@ -122,9 +88,8 @@ def handle_index_page():
                     <td valign=top>
                         <h3>Cozmo's head angle</h3>
                         <br>
-                        <input type="range" id="myRange" value="0.5" min="0" max="1" step="0.01" onchange="sendHeadValue(this.value);" 
+                        <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);" 
                             oninput="sendHeadValue(this.value)">
-                        <p id="demo"></p>
                     </td>
                 </tr>
             </table>
@@ -136,30 +101,7 @@ def handle_index_page():
                 if (gIsMicrosoftBrowser) {
                     document.getElementById("cozmoImageMicrosoftWarning").style.display = "block";
                 }
-
-                function postHttpRequest(url, dataSet)
-                {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", url, true);
-                    xhr.send( JSON.stringify( dataSet ) );
-                }
-                
-                function handleKeyActivity (e, actionType)
-                {
-                    var keyCode  = (e.keyCode ? e.keyCode : e.which);
-
-                    postHttpRequest(actionType, {keyCode})
-                }
-
-                document.addEventListener("keydown", function(e) { handleKeyActivity(e, "keydown") } );
-                document.addEventListener("keyup",   function(e) { handleKeyActivity(e, "keyup") } );
-            </script>
-            
-            <script>
-                function updateInput(val) {
-                    document.getElementById("demo").innerHTML = val;
-                }
-                
+           
                 function sendHeadValue(val) {
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
@@ -217,51 +159,32 @@ def handle_cozmoImage():
     return flask_helpers.stream_video(streaming_video, request.url_root)
 
 
-def handle_key_event(key_request, is_key_down):
-    message = json.loads(key_request.data.decode("utf-8"))
-    if remote_control_cozmo:
-        remote_control_cozmo.handle_key(key_code=(message['keyCode']), is_key_down=is_key_down)
-    return ""
-
-
 @flask_app.route('/shutdown', methods=['POST'])
 def shutdown():
     flask_helpers.shutdown_flask(request)
     return ""
 
 
-@flask_app.route('/keydown', methods=['POST'])
-def handle_keydown():
-    '''Called from Javascript whenever a key is down (note: can generate repeat calls if held down)'''
-    return handle_key_event(request, is_key_down=True)
-
-
-@flask_app.route('/keyup', methods=['POST'])
-def handle_keyup():
-    '''Called from Javascript whenever a key is released'''
-    return handle_key_event(request, is_key_down=False)
-
-
 @flask_app.route('/headAngle/<string:angleValue>', methods=['POST'])
 def headAngle(angleValue):
     angleValue = json.loads(angleValue)
-    print('Angle value : ', angleValue)
-    return angleValue
+    remote_control_cozmo.update_head_angle(angleValue)
+    return ""
 
 
 def run(sdk_conn):
     robot = sdk_conn.wait_for_robot()
     robot.enable_device_imu(True, True, True)
 
-    global remote_control_cozmo
-    remote_control_cozmo = RemoteControlCozmo(robot)
-    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot,))
-    cozmoThread.start()
-
     # Turn on image receiving by the camera
     robot.camera.image_stream_enabled = True
     # Enable color image
     robot.camera.color_image_enabled = True
+
+    global remote_control_cozmo
+    remote_control_cozmo = RemoteControlCozmo(robot)
+    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot,))
+    cozmoThread.start()
 
     flask_helpers.run_flask(flask_app)
 
