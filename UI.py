@@ -75,6 +75,35 @@ def handle_index_page():
                 background-color: #eee;
                 border: 2px solid #ccc;
             }
+            
+            .cozmo_cube{
+                width:200px;
+                text-align:center;
+                display:block;
+                background-color: transparent;
+                border: 1px solid transparent;
+                margin-right: 10px;
+                margin-bottom: 1px;
+                float:left;
+            }
+
+            .images {
+                margin-left: 150px;
+            }
+
+            textarea {
+                height:20px;
+                width:100px;
+                resize:none;
+                margin-top: 10px;
+                margin-bottom: 5px;
+            }
+
+            button {
+                width: 100px;
+                height: 25px;
+                margin: 0;
+            }
         </style>
         <body>
             <h1>Finger counter and operation with Cozmo</h1>
@@ -91,6 +120,27 @@ def handle_index_page():
                         <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);" 
                             oninput="sendHeadValue(this.value)">
                     </td>
+                    <td valign=middle>
+                        <div class="images">
+                            <div class="cozmo_cube">
+                                <img src="static/Cozmo_cube_add.png" id="cozmoCube1Image" width=149 height=149>
+                                <textarea>0x000000</textarea>
+                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 1)">Change color</button>
+                            </div>
+    
+                            <div class="cozmo_cube">
+                                <img src="static/Cozmo_cube_substract.png" id="cozmoCube2Image" width=149 height=149>
+                                <textarea>0x000000</textarea>
+                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 2)">Change color</button>
+                            </div>
+    
+                            <div class="cozmo_cube">
+                                <img src="static/Cozmo_cube_multiply.png" id="cozmoCube3Image" width=149 height=149>
+                                <textarea>0x000000</textarea>
+                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 3)">Change color</button>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
             </table>
 
@@ -105,6 +155,12 @@ def handle_index_page():
                 function sendHeadValue(val) {
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
+                    xhr.send()
+                }
+                
+                function sendChangeColorRequest(newColor, cubeId) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', `colorChange/${JSON.stringify(newColor)}, ${JSON.stringify(cubeId)}`)
                     xhr.send()
                 }
             </script>
@@ -169,6 +225,14 @@ def shutdown():
 def headAngle(angleValue):
     angleValue = json.loads(angleValue)
     remote_control_cozmo.update_head_angle(angleValue)
+    return ""
+
+
+@flask_app.route('/colorChange/<string:newColor>, <string:cubeId>', methods=['POST'])
+def colorChange(newColor, cubeId):
+    newColor = json.loads(newColor)
+    cubeId = json.loads(cubeId)
+    print("New color : ", newColor, "CubeId : ", cubeId)
     return ""
 
 
