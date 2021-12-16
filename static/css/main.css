@@ -1,0 +1,42 @@
+input[type="range"] {
+    -webkit-appearance: slider-vertical;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 100%;
+    width: 22px;
+    border-radius: 10px;
+    background-color: #eee;
+    border: 2px solid #ccc;
+}
+
+.cozmo_cube{
+    width:200px;
+    text-align:center;
+    display:block;
+    background-color: transparent;
+    border: 1px solid transparent;
+    margin-right: 10px;
+    margin-bottom: 1px;
+    float:left;
+}
+
+.images {
+    margin-left: 150px;
+}
+
+
+
+textarea {
+    height:20px;
+    width:100px;
+    resize:none;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+button {
+    width: 100px;
+    height: 25px;
+    margin: 0;
+}

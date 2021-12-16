@@ -112,7 +112,7 @@ def cozmo_program(robot: cozmo.robot.Robot):
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
     robot.say_text("Tape sur un cube").wait_for_completed()
-    robot.world.wait_for(cozmo.objects.EvtObjectTapped)
+    robot.world.wait_for(cozmo.objects.EvtObjectTapped)  # Timeout par defaut 30 secondes
     operation = cubes.cube_blinking(cubes.cube_tapped_id)
 
     # Detect the second number

@@ -5,11 +5,12 @@ import math
 import sys
 import flask_helpers
 import cozmo
+import numpy as np
 from threading import Thread
 import two_hands
 
 try:
-    from flask import Flask, request
+    from flask import Flask, render_template, request
 except ImportError:
     sys.exit("Cannot import from flask: Do `pip3 install --user flask` to install")
 
@@ -58,115 +59,7 @@ class RemoteControlCozmo:
 
 @flask_app.route("/")
 def handle_index_page():
-    return '''
-    <html>
-        <head>
-            <title>User Interface for Cozmo</title>
-        </head>
-        <style>
-            input[type="range"] {
-                -webkit-appearance: slider-vertical;
-            }
-            
-            input[type="range"]::-webkit-slider-runnable-track {
-                height: 100%;
-                width: 22px;
-                border-radius: 10px;
-                background-color: #eee;
-                border: 2px solid #ccc;
-            }
-            
-            .cozmo_cube{
-                width:200px;
-                text-align:center;
-                display:block;
-                background-color: transparent;
-                border: 1px solid transparent;
-                margin-right: 10px;
-                margin-bottom: 1px;
-                float:left;
-            }
-
-            .images {
-                margin-left: 150px;
-            }
-
-            textarea {
-                height:20px;
-                width:100px;
-                resize:none;
-                margin-top: 10px;
-                margin-bottom: 5px;
-            }
-
-            button {
-                width: 100px;
-                height: 25px;
-                margin: 0;
-            }
-        </style>
-        <body>
-            <h1>Finger counter and operation with Cozmo</h1>
-            <table>
-                <tr>
-                    <td valign = top>
-                        <img src="cozmoImage" id="cozmoImageId" width=640 height=480>
-                        <div id="DebugInfoId"></div>
-                    </td>
-                    <td width=30></td>
-                    <td valign=top>
-                        <h3>Cozmo's head angle</h3>
-                        <br>
-                        <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);" 
-                            oninput="sendHeadValue(this.value)">
-                    </td>
-                    <td valign=middle>
-                        <div class="images">
-                            <div class="cozmo_cube">
-                                <img src="static/Cozmo_cube_add.png" id="cozmoCube1Image" width=149 height=149>
-                                <textarea>0x000000</textarea>
-                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 1)">Change color</button>
-                            </div>
-    
-                            <div class="cozmo_cube">
-                                <img src="static/Cozmo_cube_substract.png" id="cozmoCube2Image" width=149 height=149>
-                                <textarea>0x000000</textarea>
-                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 2)">Change color</button>
-                            </div>
-    
-                            <div class="cozmo_cube">
-                                <img src="static/Cozmo_cube_multiply.png" id="cozmoCube3Image" width=149 height=149>
-                                <textarea>0x000000</textarea>
-                                <button onclick="sendChangeColorRequest(this.previousElementSibling.innerHTML, 3)">Change color</button>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-
-            <script type="text/javascript">
-                var gUserAgent = window.navigator.userAgent;
-                var gIsMicrosoftBrowser = gUserAgent.indexOf('MSIE ') > 0 || gUserAgent.indexOf('Trident/') > 0 || gUserAgent.indexOf('Edge/') > 0;
-
-                if (gIsMicrosoftBrowser) {
-                    document.getElementById("cozmoImageMicrosoftWarning").style.display = "block";
-                }
-           
-                function sendHeadValue(val) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
-                    xhr.send()
-                }
-                
-                function sendChangeColorRequest(newColor, cubeId) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', `colorChange/${JSON.stringify(newColor)}, ${JSON.stringify(cubeId)}`)
-                    xhr.send()
-                }
-            </script>
-        </body>
-    </html>
-    '''
+    return render_template('Cozmo_page.html')
 
 
 def streaming_video(url_root):
@@ -228,12 +121,52 @@ def headAngle(angleValue):
     return ""
 
 
-@flask_app.route('/colorChange/<string:newColor>, <string:cubeId>', methods=['POST'])
-def colorChange(newColor, cubeId):
-    newColor = json.loads(newColor)
-    cubeId = json.loads(cubeId)
-    print("New color : ", newColor, "CubeId : ", cubeId)
-    return ""
+def hexa_color_converter(color_code):
+    if color_code[0:2] == "0x" and len(color_code) == 8:
+        return int(color_code[2:4], 16), int(color_code[4:6], 16), int(color_code[6:8], 16)
+    return -1, -1, -1
+
+
+def recolor_cube(image_path, color_code, save_image_name):
+    r, g, b = hexa_color_converter(color_code)
+    if r == -1:
+        print("Bad color format")
+        return
+    green = (0, 255, 0, 255)
+    image = Image.open(image_path)
+    im = np.array(image)
+
+    larg, long, coul = im.shape
+
+    for i in range(2, 30):
+        for j in range(44, 105):
+            for k in range(coul - 1):
+                if all(x == y for x, y in zip(im[i][j], green)):
+                    im[i][j] = (r, g, b, 255)
+                    im[148 - i][148 - j] = (r, g, b, 255)
+                    im[j][i] = (r, g, b, 255)
+                    im[148 - j][148 - i] = (r, g, b, 255)
+            im[i][j][3] = 255
+
+    imag = Image.fromarray(im)
+    imag.save(save_image_name)
+
+
+@flask_app.route('/colorChange/', methods=['POST'])
+def colorChange():
+    arguments = request.get_json()
+
+    newColor = arguments['newColor']
+    cubeId = arguments['cubeId']
+    recolor_cube("static/images/" + cubeId + ".png", newColor, "static/temp/" + cubeId + ".png")
+    return cubeId
+
+
+@flask_app.after_request
+def add_header(r):
+    r.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    r.headers['Pragma'] = 'no-cache'
+    return r
 
 
 def run(sdk_conn):
