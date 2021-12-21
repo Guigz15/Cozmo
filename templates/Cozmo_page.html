@@ -1,52 +1,70 @@
+<!DOCTYPE html>
 <html lang="fr">
     <head>
         <title>User Interface for Cozmo</title>
-        <!--<link rel="stylesheet" href="static/css/bootstrap.min.css" />-->
         <link rel="stylesheet" href="static/css/main.css" />
+        <meta charset="utf-8"/>
     </head>
     <body>
         <h1>Finger counter and operation with Cozmo</h1>
-        <table>
-            <tr>
-                <td valign = top>
-                    <div class="images">
-            <img src="cozmoImage" id="cozmoImageId" width=640 height=480>
-            <div id="DebugInfoId"></div>
 
-            </div>
-                </td>
-                <td width=30></td>
-                <td valign=top>
-                    <h3>Cozmo's head angle</h3>
-                    <br>
-                    <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);"
-                        oninput="sendHeadValue(this.value)">
-                </td>
-                <td valign=middle>
-                    <div class="cozmo_cube">
-                    <img src="{{ url_for('static', filename = 'images/Cozmo_cube_add.png') }}" id="Cozmo_cube_add" width=149 height=149>
-                    <input type="text" id="text_area_1" minlength="8" maxlength="8" value="0x000000" />
-                    <button onclick="sendChangeColorRequest(document.getElementById('text_area_1').value, 'Cozmo_cube_add')">Change color</button>
-                </div>
+        <main>
+            <ul>
+                <li>
+                    <h2>Cosmo's camera</h2>
+                    <img src="cozmoImage" id="cozmoImageId" alt="Video flux coming from cosmo camera"/>
+                </li>
 
-               <div class="cozmo_cube">
-                    <img src="{{ url_for('static', filename = 'images/Cozmo_cube_substract.png') }}" id="Cozmo_cube_substract" width=149 height=149>
-                    <input type="text" id="text_area_2" minlength="8" maxlength="8" value="0x000000" />
-                    <button onclick="sendChangeColorRequest(document.getElementById('text_area_2').value, 'Cozmo_cube_substract')">Change color</button>
-                </div>
+                <li>
+                    <h2>Cozmo's head angle</h2>
+                    <div>
+                        <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);" oninput="sendHeadValue(this.value);" />
+                    </div>
+                </li>
 
-                <div class="cozmo_cube">
-                    <img src="{{ url_for('static', filename = 'images/Cozmo_cube_multiply.png') }}" id="Cozmo_cube_multiply" width=149 height=149>
-                    <input type="text" id="text_area_3" minlength="8" maxlength="8" value="0x000000" />
-                    <button onclick="sendChangeColorRequest(document.getElementById('text_area_3').value, 'Cozmo_cube_multiply')">Change color</button>
-                </div>
+                <li>
+                    <ol>
+                        <li class="cozmo_cube">
+                            <img src="static/images/Cozmo_cube_add.png" id="Cozmo_cube_add" alt="Cosmo cube for addition" />
+                            <section>
+                                <h3>Addition cube</h3>
+                                <div></div>
+                                <label for="text_area_1">Set your color</label>
+                                <input type="text" id="text_area_1" minlength="8" maxlength="8" value="0x000000" />
+                                <button onclick="sendChangeColorRequest(document.getElementById('text_area_1').value, 'Cozmo_cube_add')">Change color</button>
+                            </section>
+                        </li>
 
-                </td>
-            </tr>
-        </table>
+                       <li class="cozmo_cube">
+                            <img src="static/images/Cozmo_cube_substract.png" id="Cozmo_cube_substract" alt="Cosmo cube for substract" />
+                            <section>
+                                <h3>Substraction cube</h3>
+                                <div></div>
+                                <label for="text_area_2">Set your color</label>
+                                <input type="text" id="text_area_2" minlength="8" maxlength="8" value="0x000000" />
+                                <button onclick="sendChangeColorRequest(document.getElementById('text_area_2').value, 'Cozmo_cube_substract')">Change color</button>
+                            </section>
+                        </li>
 
-        <script type="text/javascript" src="static/js/main.js">
+                        <li class="cozmo_cube">
+                            <img src="static/images/Cozmo_cube_multiply.png" id="Cozmo_cube_multiply" alt="Cosmo cube for multiplication">
+                            <section>
+                                <h3>Multiplication cube</h3>
+                                <div></div>
+                                <label for="text_area_3">Set your color</label>
+                                <input type="text" id="text_area_3" minlength="8" maxlength="8" value="0x000000" />
+                                <button onclick="sendChangeColorRequest(document.getElementById('text_area_3').value, 'Cozmo_cube_multiply')">Change color</button>
+                            </section>
+                        </li>
+                    </ol>
+                </li>
+            </ul>
+        </main>
 
-        </script>
+        <footer>
+            <p>Opération en cours : <span>5 + 7</span></p>
+        </footer>
+
+        <script type="text/javascript" src="static/js/main.js"></script>
     </body>
 </html>

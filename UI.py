@@ -1,7 +1,6 @@
 import asyncio
 import io
 import json
-import math
 import sys
 import flask_helpers
 import cozmo

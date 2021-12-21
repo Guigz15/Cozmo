@@ -1,6 +1,6 @@
-import mediapipe as mp
-import matplotlib.pyplot as plt
 import cv2
+import matplotlib.pyplot as plt
+import mediapipe as mp
 
 # Initialize the mediapipe hands class.
 mp_hands = mp.solutions.hands

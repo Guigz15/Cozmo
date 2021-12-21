@@ -20,10 +20,11 @@ these utility functions to interact with a web browser.
 
 import logging
 import sys
-from threading import Thread
 import webbrowser
-from time import sleep
 from io import BytesIO
+from threading import Thread
+from time import sleep
+
 try:
     from flask import make_response, Response, send_file
 except ImportError:

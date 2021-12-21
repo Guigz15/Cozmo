@@ -1,13 +1,12 @@
 import sys
-import cozmo
-
-import UI
-import flask_helpers
-import hand as hd
 import time
+
+import cozmo
 import numpy as np
-import cubes as cb
 from PIL import ImageOps
+
+import cubes as cb
+import hand as hd
 
 
 def hand_detection(robot: cozmo.robot.Robot):
