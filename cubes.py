@@ -13,6 +13,9 @@ class Cubes:
     cube1 = None
     cube2 = None
     cube3 = None
+    cube1_color = None
+    cube2_color = None
+    cube3_color = None
 
     def __init__(self, robot):
 
@@ -23,15 +26,18 @@ class Cubes:
 
         # Initialize cube one's color (red)
         if self.cube1 is not None:
-            self.cube1.set_lights(cozmo.lights.red_light)
+            self.cube1_color = cozmo.lights.red_light
+            self.cube1.set_lights(self.cube1_color)
 
         # Initialize cube two's color (blue)
         if self.cube2 is not None:
-            self.cube2.set_lights(cozmo.lights.blue_light)
+            self.cube2_color = cozmo.lights.blue_light
+            self.cube2.set_lights(self.cube2_color)
 
         # Initialize cube three's color (green)
         if self.cube3 is not None:
-            self.cube3.set_lights(cozmo.lights.green_light)
+            self.cube3_color = cozmo.lights.green_light
+            self.cube3.set_lights(self.cube3_color)
 
     async def on_cube_tapped(self, **kw):
         """
@@ -51,13 +57,13 @@ class Cubes:
 
             # blinking of tapped cube 1
             for i in range(4):
-                self.cube1.set_light_corners(cozmo.lights.red_light, cozmo.lights.off_light,
-                                             cozmo.lights.red_light, cozmo.lights.off_light)
+                self.cube1.set_light_corners(self.cube1_color, cozmo.lights.off_light,
+                                             self.cube1_color, cozmo.lights.off_light)
                 time.sleep(0.3)
-                self.cube1.set_light_corners(cozmo.lights.off_light, cozmo.lights.red_light,
-                                             cozmo.lights.off_light, cozmo.lights.red_light)
+                self.cube1.set_light_corners(cozmo.lights.off_light, self.cube1_color,
+                                             cozmo.lights.off_light, self.cube1_color)
                 time.sleep(0.3)
-            self.cube1.set_lights(cozmo.lights.red_light)
+            self.cube1.set_lights(self.cube1_color)
             return "+"
 
         # If cube 2 is tapped, it will make a difference

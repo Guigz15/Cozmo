@@ -1,3 +1,4 @@
+import json
 import sys
 import time
 
@@ -7,7 +8,10 @@ from PIL import ImageOps
 
 import cubes as cb
 import hand as hd
-
+try:
+    import requests
+except ImportError:
+    sys.exit("Cannot import from requests: Do `pip3 install --user requests` to install")
 
 def hand_detection(robot: cozmo.robot.Robot):
     """
@@ -87,7 +91,7 @@ def hand_detection(robot: cozmo.robot.Robot):
         sys.exit()
 
 
-def cozmo_program(robot: cozmo.robot.Robot):
+def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
 
@@ -97,9 +101,9 @@ def cozmo_program(robot: cozmo.robot.Robot):
     robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2, in_parallel=True).wait_for_completed()
 
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
-                                      cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
+                                      cb.Cubes.on_cube_tapped)
 
-    cubes = cb.Cubes(robot)
+    cubes = cubesArg
 
     # The final result initialized
     finalResult = -1
@@ -107,6 +111,9 @@ def cozmo_program(robot: cozmo.robot.Robot):
     # Detect the first number
     firstNumber = hand_detection(robot)
     print(firstNumber)
+    data = {'number': firstNumber}
+
+    requests.post("http://127.0.0.1:5000/", data=data)
 
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
