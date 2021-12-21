@@ -69,10 +69,10 @@ class RemoteControlCozmo:
         if cubeId == "Cozmo_cube_add":
             self.cube1.set_lights(color)
 
-        if cubeId == "Cozmo_cube_multiply":
+        if cubeId == "Cozmo_cube_substract":
             self.cube2.set_lights(color)
 
-        if cubeId == "Cozmo_cube_substract":
+        if cubeId == "Cozmo_cube_multiply":
             self.cube3.set_lights(color)
 
 
@@ -153,20 +153,30 @@ def recolor_cube(image_path, color_code, save_image_name):
         return
     red = (255, 0, 0, 255)
     green = (0, 255, 0, 255)
-    blue = (0, 0, 0, 255)
+    blue = (0, 0, 255, 255)
     image = Image.open(image_path)
     im = np.array(image)
 
     larg, long, coul = im.shape
 
-    for i in range(4, 136):
-        for j in range(215, 555):
+    for i in range(0, 30):
+        for j in range(30, 110):
             for k in range(coul - 1):
                 if all(x == y for x, y in zip(im[i][j], green)):
                     im[i][j] = (r, g, b, 255)
-                    im[765 - i][765 - j] = (r, g, b, 255)
+                    im[149 - i][149 - j] = (r, g, b, 255)
                     im[j][i] = (r, g, b, 255)
-                    im[765 - j][765 - i] = (r, g, b, 255)
+                    im[149 - j][149 - i] = (r, g, b, 255)
+                if all(x == y for x, y in zip(im[i][j], red)):
+                    im[i][j] = (r, g, b, 255)
+                    im[149 - i][149 - j] = (r, g, b, 255)
+                    im[j][i] = (r, g, b, 255)
+                    im[149 - j][149 - i] = (r, g, b, 255)
+                if all(x == y for x, y in zip(im[i][j], blue)):
+                    im[i][j] = (r, g, b, 255)
+                    im[149 - i][149 - j] = (r, g, b, 255)
+                    im[j][i] = (r, g, b, 255)
+                    im[149 - j][149 - i] = (r, g, b, 255)
             im[i][j][3] = 255
 
     imag = Image.fromarray(im)
