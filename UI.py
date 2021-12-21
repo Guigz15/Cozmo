@@ -137,8 +137,8 @@ def recolor_cube(image_path, color_code, save_image_name):
 
     larg, long, coul = im.shape
 
-    for i in range(2, 30):
-        for j in range(44, 105):
+    for i in range(long):
+        for j in range(larg):
             for k in range(coul - 1):
                 if all(x == y for x, y in zip(im[i][j], green)):
                     im[i][j] = (r, g, b, 255)
