@@ -7,6 +7,7 @@ import flask_helpers
 import cozmo
 import numpy as np
 from threading import Thread
+from cozmo.objects import LightCube1Id, LightCube2Id, LightCube3Id
 import two_hands
 
 try:
@@ -48,13 +49,32 @@ _default_camera_image = create_default_image(320, 240)
 
 
 class RemoteControlCozmo:
+    cube1 = None
+    cube2 = None
+    cube3 = None
 
     def __init__(self, coz):
         self.cozmo = coz
+        self.cube1 = coz.world.get_light_cube(LightCube1Id)
+        self.cube2 = coz.world.get_light_cube(LightCube2Id)
+        self.cube3 = coz.world.get_light_cube(LightCube3Id)
 
     def update_head_angle(self, angleValue):
         angle = cozmo.util.degrees(float(angleValue))
         self.cozmo.set_head_angle(angle, in_parallel=True)
+
+    def update_cube_color(self, cubeId, newColor):
+        r, g, b = hexa_color_converter(newColor)
+        color = cozmo.lights.Light(cozmo.lights.Color(rgb=(r, g, b)))
+
+        if cubeId == "Cozmo_cube_add":
+            self.cube1.set_lights(color)
+
+        if cubeId == "Cozmo_cube_multiply":
+            self.cube2.set_lights(color)
+
+        if cubeId == "Cozmo_cube_substract":
+            self.cube3.set_lights(color)
 
 
 @flask_app.route("/")
@@ -132,20 +152,22 @@ def recolor_cube(image_path, color_code, save_image_name):
     if r == -1:
         print("Bad color format")
         return
+    red = (255, 0, 0, 255)
     green = (0, 255, 0, 255)
+    blue = (0, 0, 0, 255)
     image = Image.open(image_path)
     im = np.array(image)
 
     larg, long, coul = im.shape
 
-    for i in range(2, 30):
-        for j in range(44, 105):
+    for i in range(4, 136):
+        for j in range(215, 555):
             for k in range(coul - 1):
                 if all(x == y for x, y in zip(im[i][j], green)):
                     im[i][j] = (r, g, b, 255)
-                    im[148 - i][148 - j] = (r, g, b, 255)
+                    im[765 - i][765 - j] = (r, g, b, 255)
                     im[j][i] = (r, g, b, 255)
-                    im[148 - j][148 - i] = (r, g, b, 255)
+                    im[765 - j][765 - i] = (r, g, b, 255)
             im[i][j][3] = 255
 
     imag = Image.fromarray(im)
@@ -159,6 +181,7 @@ def colorChange():
     newColor = arguments['newColor']
     cubeId = arguments['cubeId']
     recolor_cube("static/images/" + cubeId + ".png", newColor, "static/temp/" + cubeId + ".png")
+    remote_control_cozmo.update_cube_color(cubeId, newColor)
     return cubeId
 
 
