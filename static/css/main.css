@@ -75,11 +75,20 @@ main > ul > li:first-child > img {
 }
 
 /* COMSO HEAD ANGLE */
-main > ul > li:nth-child(2) > div {
-    flex: 1;
+main > ul > li:nth-child(2) > h2 {
+    flex: 0.3;
     justify-content: center;
     align-items: center;
     display: flex;
+    margin-top: 2em;
+}
+
+main > ul > li:nth-child(2) > div {
+    flex: 0.3;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    margin-bottom: 2em;
 }
 
 main > ul > li:nth-child(2) > div > input {
@@ -122,10 +131,29 @@ main > ul > li > ol > li > section > div {
 /*
 FOOTER
 */
+footer {
+    flex: 1;
+}
 
-footer > p {
+footer > ul {
+    display: flex;
+}
+
+footer > ul > li {
+    display: flex;
+    flex-direction: column;
+    margin: 0.5em;
+    flex: 1;
+}
+
+footer > ul > li:first-child > p {
     text-align: center;
     font-size: xx-large;
     font-weight: bold;
 }
 
+footer > ul > li:nth-child(2) > p {
+    text-align: center;
+    font-size: xx-large;
+    font-weight: bold;
+}

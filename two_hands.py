@@ -95,6 +95,7 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
 
+    :param cubesArg:
     :param robot: An instance of cozmo Robot.
     """
     # Set cozmo's head angle
@@ -111,9 +112,7 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     # Detect the first number
     firstNumber = hand_detection(robot)
     print(firstNumber)
-    data = {'number': firstNumber}
-
-    requests.post("http://127.0.0.1:5000/", data=data)
+    requests.post("http://127.0.0.1:5000/", data={'firstNumber': firstNumber})
 
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
@@ -123,6 +122,7 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
 
     # Detect the second number
     secondNumber = hand_detection(robot)
+    requests.post("http://127.0.0.1:5000/", data={'secondNumber': secondNumber})
 
     if operation == '+':
         finalResult = firstNumber + secondNumber
