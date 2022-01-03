@@ -127,6 +127,11 @@ main > ul > li > ol > li > section > div {
     flex: 1;
 }
 
+main > ul > li > ol > li > section > button:hover {
+    border: 2px solid #F05454;
+    color: #F05454;
+    background-color: #30475E;
+}
 
 /*
 FOOTER
@@ -157,3 +162,18 @@ footer > ul > li:nth-child(2) > p {
     font-size: xx-large;
     font-weight: bold;
 }
+
+footer > ul > li:nth-child(3) {
+    justify-content: center;
+}
+
+footer > ul > li:nth-child(3) > button {
+    transition: .4s ease-in;
+}
+
+footer > ul > li:nth-child(3) > button:hover {
+    border: 2px solid #F05454;
+    color: #F05454;
+    background-color: #30475E;
+}
+

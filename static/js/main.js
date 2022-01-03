@@ -29,3 +29,7 @@ function sendChangeColorRequest(newColor, cubeId) {
         });
     });
 }
+
+function relaunchCozmoProgram() {
+
+}

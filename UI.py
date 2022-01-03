@@ -164,7 +164,6 @@ def recolor_cube(image_path, color_code, save_image_name):
 
     larg, long, coul = im.shape
 
-    '''TODO: Improved this coloring algorithm'''
     for i in range(0, 30):
         for j in range(30, 110):
             for k in range(coul - 1):

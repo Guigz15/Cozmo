@@ -101,6 +101,10 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     # Set cozmo's head angle
     robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2, in_parallel=True).wait_for_completed()
 
+    # Set cozmo's lift height
+    if robot.lift_height.distance_mm != cozmo.robot.MIN_LIFT_HEIGHT_MM:
+        robot.set_lift_height(0.0).wait_for_completed()
+
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
                                       cb.Cubes.on_cube_tapped)
 
@@ -112,7 +116,6 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     # Detect the first number
     firstNumber = hand_detection(robot)
     print(firstNumber)
-    requests.post("http://127.0.0.1:5000/", data={'firstNumber': firstNumber})
 
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
@@ -122,7 +125,6 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
 
     # Detect the second number
     secondNumber = hand_detection(robot)
-    requests.post("http://127.0.0.1:5000/", data={'secondNumber': secondNumber})
 
     if operation == '+':
         finalResult = firstNumber + secondNumber
