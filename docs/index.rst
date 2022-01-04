@@ -22,14 +22,14 @@ Our project is an academic project around the Anki's robot named **Cozmo**.
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
-   :caption: User Interface
-
-   interface
-
-.. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Operation and Cubes
 
    operation_cubes
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: User Interface
+
+   interface

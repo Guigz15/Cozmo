@@ -13,6 +13,7 @@ try:
 except ImportError:
     sys.exit("Cannot import from requests: Do `pip3 install --user requests` to install")
 
+
 def hand_detection(robot: cozmo.robot.Robot):
     """
     This function will use the two above functions to count fingers on both hands with cozmo's camera.
