@@ -1,5 +1,8 @@
 import sys
 import cozmo
+import UI
+import flask_helpers
+
 import hand as hd
 import time
 import numpy as np
@@ -10,18 +13,10 @@ from PIL import ImageOps
 def hand_detection(robot: cozmo.robot.Robot):
     """
     This function will use the two above functions to count fingers on both hands with cozmo's camera.
-    Args:
-        robot:      An instance of cozmo Robot.
-    Returns:
-        finalTotal: An int that represents the counted fingers.
-    """
 
-    # Enable camera streaming
-    robot.camera.image_stream_enabled = True
-    # Enable color image
-    robot.camera.color_image_enabled = True
-    # Set cozmo's head angle
-    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+    :param robot: An instance of cozmo Robot.
+    :return: **finalTotal** - An int that represents the counted fingers.
+    """
 
     try:
         hand = -1
@@ -58,11 +53,17 @@ def hand_detection(robot: cozmo.robot.Robot):
                         hand = totalFingers
                     else:
                         finalTotal = totalFingers
+                        if finalTotal == 1 and (fingers_statuses.get("RIGHT_MIDDLE") is True or fingers_statuses.get(
+                                "LEFT_MIDDLE") is True):
+                            robot.say_text("Tu veux te battre LAAAAAAA", in_parallel=True).wait_for_completed()
+                        robot.say_text(f'{totalFingers}', in_parallel=True).wait_for_completed()
+                        currentHeadAngle = robot.head_angle
                         robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabHappy,
-                                                ignore_lift_track=True).wait_for_completed()
+                                                ignore_lift_track=True, ignore_body_track=True,
+                                                in_parallel=True).wait_for_completed()
+                        robot.set_head_angle(currentHeadAngle, in_parallel=True).wait_for_completed()
                         return finalTotal
 
-                    robot.say_text(f'{totalFingers}').wait_for_completed()
                     time.sleep(2)
 
                 else:
@@ -70,14 +71,17 @@ def hand_detection(robot: cozmo.robot.Robot):
 
                     # One more no hand detected
                     nbNoHand += 1
-                    robot.play_anim(name="anim_mm_thinking", ignore_head_track=True).wait_for_completed()
+                    robot.play_anim(name="anim_mm_thinking", ignore_head_track=True,
+                                    in_parallel=True).wait_for_completed()
 
                     # If hands are not detected for a long time
-                    if nbNoHand == 50:
+                    if nbNoHand == 100:
                         nbNoHand = 0
-                        robot.say_text("Je ne te vois pas").wait_for_completed()
-                        robot.play_anim(name="anim_bored_01", ignore_body_track=True).wait_for_completed()
-                        robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 4).wait_for_completed()
+                        currentHeadAngle = robot.head_angle
+                        robot.say_text("Je ne te vois pas", in_parallel=True).wait_for_completed()
+                        robot.play_anim(name="anim_bored_01", ignore_body_track=True,
+                                        in_parallel=True).wait_for_completed()
+                        robot.set_head_angle(currentHeadAngle, in_parallel=True).wait_for_completed()
 
     # To detect Ctrl+C and shut down properly
     except KeyboardInterrupt:
@@ -87,9 +91,12 @@ def hand_detection(robot: cozmo.robot.Robot):
 def cozmo_program(robot: cozmo.robot.Robot):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
-    Args:
-         robot: An instance of cozmo Robot.
+
+    :param robot: An instance of cozmo Robot.
     """
+    # Set cozmo's head angle
+    robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2, in_parallel=True).wait_for_completed()
+
     handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
                                       cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
 
@@ -104,8 +111,9 @@ def cozmo_program(robot: cozmo.robot.Robot):
 
     # Wait for any cubes tapped
     print('J\'' + 'attends que tu tapes')
-    s = robot.world.wait_for(cozmo.objects.EvtObjectTapped)
 
+    robot.say_text("Tape sur un cube").wait_for_completed()
+    robot.world.wait_for(cozmo.objects.EvtObjectTapped)
     operation = cubes.cube_blinking(cubes.cube_tapped_id)
 
     # Detect the second number
@@ -115,16 +123,16 @@ def cozmo_program(robot: cozmo.robot.Robot):
         finalResult = firstNumber + secondNumber
     elif operation == '-':
         finalResult = firstNumber - secondNumber
+
+        if finalResult < 0:
+            finalResult = "moins" + str(-finalResult)
+
     elif operation == '*':
         finalResult = firstNumber * secondNumber
 
     # Cozmo say the result
-    robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}').wait_for_completed()
+
+    robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}',
+                   in_parallel=True).wait_for_completed()
 
     print(finalResult)
-
-
-# To prevent Cozmo to drive off the charger when SDK mode enabled
-cozmo.robot.Robot.drive_off_charger_on_connect = False
-# To run the program on Cozmo
-cozmo.run_program(cozmo_program, use_viewer=True)

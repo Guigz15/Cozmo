@@ -16,6 +16,7 @@ mp_drawing = mp.solutions.drawing_utils
 def detectHandsLandmarks(image, hands, draw=True, display=True):
     """
     This function performs hands landmarks detection on an image.
+<<<<<<< HEAD
     Args:
         image:   The input image with prominent hand(s) whose landmarks needs to be detected.
         hands:   The Hands function required to perform the hands landmarks detection.
@@ -25,6 +26,18 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
     Returns:
         output_image: A copy of input image with the detected hands landmarks drawn if it was specified.
         results:      The output of the hands landmarks detection on the input image.
+=======
+
+    :param image:   The input image with prominent hand(s) whose landmarks needs to be detected.
+    :param hands:   The Hands function required to perform the hands landmarks detection.
+    :param draw:    A boolean value that is if set to true the function draws hands landmarks on the output image.
+    :param display: A boolean value that is if set to true the function displays the original input image, and the output
+                 image with hands landmarks drawn if it was specified and returns nothing.
+
+    :returns:
+        - **output_image** - A copy of input image with the detected hands landmarks drawn if it was specified.
+        - **results** - The output of the hands landmarks detection on the input image.
+>>>>>>> 8c7fd8f9697906fb9e9a954e25a4701ae06be8a5
     """
 
     # Create a copy of the input image to draw landmarks on.
@@ -73,6 +86,7 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
 def countFingers(image, results, draw=True, display=True):
     """
     This function will count the number of fingers up for each hand in the image.
+<<<<<<< HEAD
     Args:
         image:   The image of the hands on which the fingers counting is required to be performed.
         results: The output of the hands landmarks detection performed on the image of the hands.
@@ -83,6 +97,18 @@ def countFingers(image, results, draw=True, display=True):
         output_image:     A copy of the input image with the fingers count written, if it was specified.
         fingers_statuses: A dictionary containing the status (i.e., open or close) of each finger of both hands.
         count:            A dictionary containing the count of the fingers that are up, of both hands.
+=======
+
+    :param image:   The image of the hands on which the fingers counting is required to be performed.
+    :param results: The output of the hands landmarks detection performed on the image of the hands.
+    :param draw:    A boolean value that is if set to true the function writes the total count of fingers of the hands on the
+                 output image.
+    :param display: A boolean value that is if set to true the function displays the resultant image and returns nothing.
+    :returns:
+        - **output_image** - A copy of the input image with the fingers count written, if it was specified.
+        - **fingers_statuses** - A dictionary containing the status (i.e., open or close) of each finger of both hands.
+        - **count** - A dictionary containing the count of the fingers that are up, of both hands.
+>>>>>>> 8c7fd8f9697906fb9e9a954e25a4701ae06be8a5
     """
 
     # Get the height and width of the input image.

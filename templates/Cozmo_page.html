@@ -1,0 +1,52 @@
+<html lang="fr">
+        <head>
+            <title>User Interface for Cozmo</title>
+            <!--<link rel="stylesheet" href="static/css/bootstrap.min.css" />-->
+            <link rel="stylesheet" href="static/css/main.css" />
+        </head>
+        <body>
+            <h1>Finger counter and operation with Cozmo</h1>
+
+            <table>
+                <tr>
+                    <td valign = top>
+                        <div class="images">
+                <img src="cozmoImage" id="cozmoImageId" width=640 height=480>
+                <div id="DebugInfoId"></div>
+
+                </div>
+                    </td>
+                    <td width=30></td>
+                    <td valign=top>
+                        <h3>Cozmo's head angle</h3>
+                        <br>
+                        <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);"
+                            oninput="sendHeadValue(this.value)">
+                    </td>
+                    <td valign=middle>
+                        <div class="cozmo_cube">
+                        <img src="{{ url_for('static', filename = 'add.png') }}" id="add" width=149 height=149>
+                        <input type="text" id="text_area_1" minlength="8" maxlength="8" value="0x000000" />
+                        <button onclick="sendChangeColorRequest(document.getElementById('text_area_1').value, 'add')">Change color</button>
+                    </div>
+
+                   <div class="cozmo_cube">
+                        <img src="{{ url_for('static', filename = 'substract.png') }}" id="substract" width=149 height=149>
+                        <input type="text" id="text_area_2" minlength="8" maxlength="8" value="0x000000" />
+                        <button onclick="sendChangeColorRequest(document.getElementById('text_area_2').value, 'substract')">Change color</button>
+                    </div>
+
+                    <div class="cozmo_cube">
+                        <img src="{{ url_for('static', filename = 'multiply.png') }}" id="multiply" width=149 height=149>
+                        <input type="text" id="text_area_3" minlength="8" maxlength="8" value="0x000000" />
+                        <button onclick="sendChangeColorRequest(document.getElementById('text_area_3').value, 'multiply')">Change color</button>
+                    </div>
+
+                    </td>
+                </tr>
+            </table>
+            <script type="text/javascript" src="static/js/main.js">
+
+            </script>
+        </body>
+    </html>
