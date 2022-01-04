@@ -95,7 +95,7 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
 
-    :param cubesArg:
+    :param cubesArg: All cube object
     :param robot: An instance of cozmo Robot.
     """
     # Set cozmo's head angle
