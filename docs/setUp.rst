@@ -60,4 +60,4 @@ This part will guide you to install all libraries required to use our program on
 
 .. |anki developer web page| raw:: html
 
-   <a href="http://cozmosdk.anki.com/docs/index.html" target="_blank">Anki developer web page</a>
+   <a href="http://cozmosdk.anki.com/docs/initial.html" target="_blank">Anki developer web page</a>
