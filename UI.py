@@ -176,6 +176,12 @@ def shutdown():
     return ""
 
 
+@flask_app.route('/reload', methods=['POST'])
+def reload():
+    print("RELOAD")
+    return ""
+
+
 @flask_app.route('/headAngle/<string:angleValue>', methods=['POST'])
 def headAngle(angleValue):
     """

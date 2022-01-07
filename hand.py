@@ -1,28 +1,19 @@
 import cv2
-import matplotlib.pyplot as plt
 import mediapipe as mp
 
 # Initialize the mediapipe hands class.
 mp_hands = mp.solutions.hands
 
 # Set up the Hands functions for images and videos.
-# hands = mp_hands.Hands(static_image_mode=True, max_num_hands=2, min_detection_confidence=0.5)
 hands_videos = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
 
-# Initialize the mediapipe drawing class.
-mp_drawing = mp.solutions.drawing_utils
 
-
-def detectHandsLandmarks(image, hands, draw=True, display=True):
+def detectHandsLandmarks(image, hands):
     """
     This function performs hands landmarks detection on an image.
 
     :param image:   The input image with prominent hand(s) whose landmarks needs to be detected.
     :param hands:   The Hands function required to perform the hands landmarks detection.
-    :param draw:    A boolean value that is if set to true the function draws hands landmarks on the output image.
-    :param display: A boolean value that is if set to true the function displays the original input image, and the output
-                 image with hands landmarks drawn if it was specified and returns nothing.
-
     :returns:
         - **output_image** - A copy of input image with the detected hands landmarks drawn if it was specified.
         - **results** - The output of the hands landmarks detection on the input image.
@@ -31,55 +22,23 @@ def detectHandsLandmarks(image, hands, draw=True, display=True):
     # Create a copy of the input image to draw landmarks on.
     output_image = image.copy()
 
+    '''
     # Convert the image from BGR into RGB format.
     imgRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
+    '''
     # Perform the Hands Landmarks Detection.
-    results = hands.process(imgRGB)
+    results = hands.process(image)
 
-    # Check if landmarks are found and are specified to be drawn.
-    if results.multi_hand_landmarks and draw:
-
-        # Iterate over the found hands.
-        for hand_landmarks in results.multi_hand_landmarks:
-            # Draw the hand landmarks on the copy of the input image.
-            mp_drawing.draw_landmarks(image=output_image, landmark_list=hand_landmarks,
-                                      connections=mp_hands.HAND_CONNECTIONS,
-                                      landmark_drawing_spec=mp_drawing.DrawingSpec(color=(255, 255, 255),
-                                                                                   thickness=2, circle_radius=2),
-                                      connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0),
-                                                                                     thickness=2, circle_radius=2))
-
-    # Check if the original input image and the output image are specified to be displayed.
-    if display:
-
-        # Display the original input image and the output image.
-        plt.figure(figsize=[15, 15])
-        plt.subplot(121);
-        plt.imshow(image[:, :, ::-1]);
-        plt.title("Original Image");
-        plt.axis('off');
-        plt.subplot(122);
-        plt.imshow(output_image[:, :, ::-1]);
-        plt.title("Output");
-        plt.axis('off');
-
-    # Otherwise
-    else:
-
-        # Return the output image and results of hands landmarks detection.
-        return output_image, results
+    # Return the output image and results of hands landmarks detection.
+    return output_image, results
 
 
-def countFingers(image, results, draw=True, display=True):
+def countFingers(image, results):
     """
     This function will count the number of fingers up for each hand in the image.
 
     :param image:   The image of the hands on which the fingers counting is required to be performed.
     :param results: The output of the hands landmarks detection performed on the image of the hands.
-    :param draw:    A boolean value that is if set to true the function writes the total count of fingers of the hands on the
-                 output image.
-    :param display: A boolean value that is if set to true the function displays the resultant image and returns nothing.
     :returns:
         - **output_image** - A copy of the input image with the fingers count written, if it was specified.
         - **fingers_statuses** - A dictionary containing the status (i.e., open or close) of each finger of both hands.
@@ -151,24 +110,5 @@ def countFingers(image, results, draw=True, display=True):
             # Increment the count of the fingers up of the hand by 1.
             count[hand_label.upper()] += 1
 
-    # Check if the total count of the fingers of both hands are specified to be written on the output image.
-    if draw:
-        # Write the total count of the fingers of both hands on the output image.
-        cv2.putText(output_image, " Total Fingers: ", (10, 25), cv2.FONT_HERSHEY_COMPLEX, 1, (20, 255, 155), 2)
-        cv2.putText(output_image, str(sum(count.values())), (width // 2 - 150, 240), cv2.FONT_HERSHEY_SIMPLEX,
-                    8.9, (20, 255, 155), 10, 10)
-
-    # Check if the output image is specified to be displayed.
-    if display:
-
-        # Display the output image.
-        plt.figure(figsize=[10, 10])
-        plt.imshow(output_image[:, :, ::-1]);
-        plt.title("Output Image");
-        plt.axis('off');
-
-    # Otherwise
-    else:
-
-        # Return the output image, the status of each finger and the count of the fingers up of both hands.
-        return output_image, fingers_statuses, count
+    # Return the output image, the status of each finger and the count of the fingers up of both hands.
+    return output_image, fingers_statuses, count

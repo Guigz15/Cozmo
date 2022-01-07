@@ -1,11 +1,9 @@
 import json
 import sys
 import time
-
 import cozmo
 import numpy as np
 from PIL import ImageOps
-
 import cubes as cb
 import hand as hd
 try:
@@ -44,12 +42,12 @@ def hand_detection(robot: cozmo.robot.Robot):
                 im = np.array(im)
 
                 # Hand landmarks process
-                frame, results = hd.detectHandsLandmarks(im, hd.hands_videos, display=False)
+                frame, results = hd.detectHandsLandmarks(im, hd.hands_videos)
 
                 # Check if the hands landmarks in the frame are detected.
                 if results.multi_hand_landmarks:
                     # Count the number of fingers up of each hand in the frame.
-                    frame, fingers_statuses, count = hd.countFingers(frame, results, display=False)
+                    frame, fingers_statuses, count = hd.countFingers(frame, results)
                     totalFingers = sum(count.values())
 
                     # Check if detected number is the right number
