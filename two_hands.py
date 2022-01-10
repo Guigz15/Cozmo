@@ -1,11 +1,10 @@
 import json
 import sys
 import time
-
 import cozmo
 import numpy as np
 from PIL import ImageOps
-import UI
+
 import cubes as cb
 import hand as hd
 
@@ -14,8 +13,6 @@ try:
 except ImportError:
     sys.exit("Cannot import from requests: Do `pip3 install --user requests` to install")
 
-global stop
-stop = False
 
 def hand_detection(robot: cozmo.robot.Robot):
     """
@@ -33,11 +30,7 @@ def hand_detection(robot: cozmo.robot.Robot):
         nbNoHand = 0
 
         # To check twice the number of fingers
-        while hand != finalTotal and stop == False:
-
-            if UI.exit_event.is_set():
-                print('Salut')
-                return KeyboardInterrupt
+        while hand != finalTotal:
 
             # Get the image of cozmo's camera
             latest_image = robot.world.latest_image
@@ -51,12 +44,12 @@ def hand_detection(robot: cozmo.robot.Robot):
                 im = np.array(im)
 
                 # Hand landmarks process
-                frame, results = hd.detectHandsLandmarks(im, hd.hands_videos, display=False)
+                frame, results = hd.detectHandsLandmarks(im, hd.hands_videos)
 
                 # Check if the hands landmarks in the frame are detected.
                 if results.multi_hand_landmarks:
                     # Count the number of fingers up of each hand in the frame.
-                    frame, fingers_statuses, count = hd.countFingers(frame, results, display=False)
+                    frame, fingers_statuses, count = hd.countFingers(frame, results)
                     totalFingers = sum(count.values())
 
                     # Check if detected number is the right number
@@ -96,15 +89,14 @@ def hand_detection(robot: cozmo.robot.Robot):
 
     # To detect Ctrl+F2 and shut down properly
     except KeyboardInterrupt:
-        #sys.exit()
-        print('Ici')
+        sys.exit()
 
 
 def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
 
-    :param cubesArg:
+    :param cubesArg: All cube object
     :param robot: An instance of cozmo Robot.
     """
     # Set cozmo's head angle
@@ -125,34 +117,32 @@ def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     # Detect the first number
     firstNumber = hand_detection(robot)
 
-    if not stop:
+    print(firstNumber)
 
-        print(firstNumber)
+    # Wait for any cubes tapped
+    print('J\'' + 'attends que tu tapes')
 
-        # Wait for any cubes tapped
-        print('J\'' + 'attends que tu tapes')
+    robot.say_text("Tape sur un cube").wait_for_completed()
+    robot.world.wait_for(cozmo.objects.EvtObjectTapped)  # Timeout par defaut 30 secondes
+    operation = cubes.cube_blinking(cubes.cube_tapped_id)
 
-        robot.say_text("Tape sur un cube").wait_for_completed()
-        robot.world.wait_for(cozmo.objects.EvtObjectTapped)  # Timeout par defaut 30 secondes
-        operation = cubes.cube_blinking(cubes.cube_tapped_id)
+    # Detect the second number
+    secondNumber = hand_detection(robot)
 
-        # Detect the second number
-        secondNumber = hand_detection(robot)
+    if operation == '+':
+        finalResult = firstNumber + secondNumber
+    elif operation == '-':
+        finalResult = firstNumber - secondNumber
 
-        if operation == '+':
-            finalResult = firstNumber + secondNumber
-        elif operation == '-':
-            finalResult = firstNumber - secondNumber
+        if finalResult < 0:
+            finalResult = "moins" + str(-finalResult)
 
-            if finalResult < 0:
-                finalResult = "moins" + str(-finalResult)
+    elif operation == '*':
+        finalResult = firstNumber * secondNumber
 
-        elif operation == '*':
-            finalResult = firstNumber * secondNumber
+    # Cozmo say the result
 
-        # Cozmo say the result
+    robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}',
+                   in_parallel=True).wait_for_completed()
 
-        robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}',
-                       in_parallel=True).wait_for_completed()
-
-        print(finalResult)
+    print(finalResult)

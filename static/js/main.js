@@ -1,12 +1,4 @@
 
-const gUserAgent = window.navigator.userAgent;
-
-const gIsMicrosoftBrowser = gUserAgent.indexOf('MSIE ') > 0 || gUserAgent.indexOf('Trident/') > 0 || gUserAgent.indexOf('Edge/') > 0;
-
-if (gIsMicrosoftBrowser) {
-    document.getElementById("cozmoImageMicrosoftWarning").style.display = "block";
-}
-
 function sendHeadValue(val) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
@@ -34,6 +26,8 @@ function sendChangeColorRequest(newColor, cubeId) {
 
 function relaunchCozmoProgram() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `restartProgram/`)
+
+    xhr.open('POST', `reload`)
     xhr.send()
 }
+

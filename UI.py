@@ -28,7 +28,15 @@ except ImportError:
 
 
 def create_default_image(image_width, image_height, do_gradient=False):
-    '''Create a place-holder PIL image to use until we have a live feed from Cozmo'''
+    """
+    Create a place-holder PIL image to use until we have a live feed from Cozmo
+
+    :param image_width: Image's width.
+    :param image_height: Image's height.
+    :param do_gradient: To perform a gradient.
+    :return: **image** - Cozmo's image.
+    """
+
     image_bytes = bytearray([0x70, 0x70, 0x70]) * image_width * image_height
 
     if do_gradient:
@@ -50,6 +58,10 @@ _default_camera_image = create_default_image(320, 240)
 
 
 class RemoteControlCozmo:
+    """
+    This class allow to control cozmo and its cubes with web page.
+    """
+
     cube1 = None
     cube2 = None
     cube3 = None
@@ -63,10 +75,22 @@ class RemoteControlCozmo:
         self.cube3 = self.cubes.cube3
 
     def update_head_angle(self, angleValue):
+        """
+        Allow updating head angle.
+
+        :param angleValue: New head angle value.
+        """
+
         angle = cozmo.util.degrees(float(angleValue))
         self.cozmo.set_head_angle(angle, in_parallel=True)
 
     def update_cube_color(self, cubeId, newColor):
+        """
+        Allow updating cube's color.
+
+        :param cubeId: The cube updated.
+        :param newColor: New color of the cube linked to cubeID.
+        """
         r, g, b = hexa_color_converter(newColor)
         color = cozmo.lights.Light(cozmo.lights.Color(rgb=(r, g, b)))
 
@@ -85,11 +109,22 @@ class RemoteControlCozmo:
 
 @flask_app.route("/")
 def handle_index_page():
+    """
+    Display html page.
+
+    :return: Source code of our html page.
+    """
+
     return render_template('Cozmo_page.html')
 
 
 def streaming_video(url_root):
-    '''Video streaming generator function'''
+    """
+    Video streaming generator function.
+
+    :param url_root: Html page's URL.
+    """
+
     try:
         while True:
             if remote_control_cozmo:
@@ -110,6 +145,12 @@ def streaming_video(url_root):
 
 
 def serve_single_image():
+    """
+    To get cozmo's image.
+
+    :return: Cozmo's image.
+    """
+
     if remote_control_cozmo:
         try:
             image = remote_control_cozmo.cozmo.world.latest_image
@@ -122,38 +163,62 @@ def serve_single_image():
     return flask_helpers.serve_pil_image(_default_camera_image)
 
 
-def is_microsoft_browser(request):
-    agent = request.user_agent.string
-    return 'Edge/' in agent or 'MSIE ' in agent or 'Trident/' in agent
-
-
 @flask_app.route("/cozmoImage")
 def handle_cozmoImage():
-    if is_microsoft_browser(request):
-        return serve_single_image()
     return flask_helpers.stream_video(streaming_video, request.url_root)
 
 
 @flask_app.route('/shutdown', methods=['POST'])
 def shutdown():
+    """
+    Shutdown flask server.
+    """
+
     flask_helpers.shutdown_flask(request)
+    return ""
+
+
+@flask_app.route('/reload', methods=['POST'])
+def reload():
+    print("RELOAD")
     return ""
 
 
 @flask_app.route('/headAngle/<string:angleValue>', methods=['POST'])
 def headAngle(angleValue):
+    """
+    Get angle value from the slider in html page and update cozmo's head angle.
+
+    :param angleValue: Angle value from slider.
+    """
+
     angleValue = json.loads(angleValue)
     remote_control_cozmo.update_head_angle(angleValue)
     return ""
 
 
 def hexa_color_converter(color_code):
+    """
+    Convert hex code to rgb values.
+
+    :param color_code: Hex code color.
+    :return: An absurd value to detect error.
+    """
+
     if color_code[0:2] == "0x" and len(color_code) == 8:
         return int(color_code[2:4], 16), int(color_code[4:6], 16), int(color_code[6:8], 16)
     return -1, -1, -1
 
 
 def recolor_cube(image_path, color_code, save_image_name):
+    """
+    Color cube image with new color.
+
+    :param image_path: Original image to color.
+    :param color_code: Hex code color.
+    :param save_image_name: Name of modified image.
+    """
+
     r, g, b = hexa_color_converter(color_code)
     if r == -1:
         print("Bad color format")
@@ -183,6 +248,12 @@ def recolor_cube(image_path, color_code, save_image_name):
 
 @flask_app.route('/colorChange/', methods=['POST'])
 def colorChange():
+    """
+    Color real cozmo's cube.
+
+    :return: ID of modified color.
+    """
+
     arguments = request.get_json()
 
     newColor = arguments['newColor']
@@ -207,15 +278,6 @@ def add_header(r):
     return r
 
 
-global exit_event
-exit_event = threading.Event()
-
-
-def signal_handler(signum, frame):
-    exit_event.set()
-    print('YO')
-
-
 def run(sdk_conn):
     robot = sdk_conn.wait_for_robot()
     robot.enable_device_imu(True, True, True)
@@ -226,14 +288,12 @@ def run(sdk_conn):
     robot.camera.color_image_enabled = True
 
     global remote_control_cozmo
-    #signal.signal(signal.SIGINT, signal_handler)
+
     remote_control_cozmo = RemoteControlCozmo(robot, cb.Cubes(robot))
-    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot, remote_control_cozmo.cubes))
-    cozmoThread.setDaemon(True)
+    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot, remote_control_cozmo.cubes), daemon=True)
     cozmoThread.start()
 
     flask_helpers.run_flask(flask_app)
-    print(cozmoThread.is_alive())
 
 
 if __name__ == '__main__':
