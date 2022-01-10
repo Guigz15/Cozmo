@@ -1,4 +1,12 @@
 
+const gUserAgent = window.navigator.userAgent;
+
+const gIsMicrosoftBrowser = gUserAgent.indexOf('MSIE ') > 0 || gUserAgent.indexOf('Trident/') > 0 || gUserAgent.indexOf('Edge/') > 0;
+
+if (gIsMicrosoftBrowser) {
+    document.getElementById("cozmoImageMicrosoftWarning").style.display = "block";
+}
+
 function sendHeadValue(val) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
@@ -18,8 +26,14 @@ function sendChangeColorRequest(newColor, cubeId) {
     })
     .then(res => {
         res.text().then(imageName => {
-            // document.getElementById("cozmoCube1Image").setAttribute('src', imageURL+"?"+performance.now());
+
             document.getElementById(imageName).setAttribute('src', "static/temp/" + imageName+".png");
         });
     });
+}
+
+function relaunchCozmoProgram() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `restartProgram/`)
+    xhr.send()
 }

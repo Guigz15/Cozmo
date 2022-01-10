@@ -1,15 +1,18 @@
 import asyncio
 import io
 import json
-import math
 import sys
+import threading
+import signal
 import flask_helpers
 import cozmo
+import cubes as cb
+import numpy as np
 from threading import Thread
 import two_hands
 
 try:
-    from flask import Flask, request
+    from flask import Flask, render_template, request
 except ImportError:
     sys.exit("Cannot import from flask: Do `pip3 install --user flask` to install")
 
@@ -47,70 +50,42 @@ _default_camera_image = create_default_image(320, 240)
 
 
 class RemoteControlCozmo:
+    cube1 = None
+    cube2 = None
+    cube3 = None
+    cubes = None
 
-    def __init__(self, coz):
+    def __init__(self, coz, cubes):
         self.cozmo = coz
+        self.cubes = cubes
+        self.cube1 = self.cubes.cube1
+        self.cube2 = self.cubes.cube2
+        self.cube3 = self.cubes.cube3
 
     def update_head_angle(self, angleValue):
         angle = cozmo.util.degrees(float(angleValue))
         self.cozmo.set_head_angle(angle, in_parallel=True)
 
+    def update_cube_color(self, cubeId, newColor):
+        r, g, b = hexa_color_converter(newColor)
+        color = cozmo.lights.Light(cozmo.lights.Color(rgb=(r, g, b)))
+
+        if cubeId == "Cozmo_cube_add":
+            self.cube1.set_lights(color)
+            self.cubes.cube1_color = color
+
+        if cubeId == "Cozmo_cube_substract":
+            self.cube2.set_lights(color)
+            self.cubes.cube2 = color
+
+        if cubeId == "Cozmo_cube_multiply":
+            self.cube3.set_lights(color)
+            self.cubes.cube3 = color
+
 
 @flask_app.route("/")
 def handle_index_page():
-    return '''
-    <html>
-        <head>
-            <title>User Interface for Cozmo</title>
-        </head>
-        <style>
-            input[type="range"] {
-                -webkit-appearance: slider-vertical;
-            }
-            
-            input[type="range"]::-webkit-slider-runnable-track {
-                height: 100%;
-                width: 22px;
-                border-radius: 10px;
-                background-color: #eee;
-                border: 2px solid #ccc;
-            }
-        </style>
-        <body>
-            <h1>Finger counter and operation with Cozmo</h1>
-            <table>
-                <tr>
-                    <td valign = top>
-                        <img src="cozmoImage" id="cozmoImageId" width=640 height=480>
-                        <div id="DebugInfoId"></div>
-                    </td>
-                    <td width=30></td>
-                    <td valign=top>
-                        <h3>Cozmo's head angle</h3>
-                        <br>
-                        <input type="range" id="myRange" value="9.75" min="-25" max="44.5" step="0.1" onchange="sendHeadValue(this.value);" 
-                            oninput="sendHeadValue(this.value)">
-                    </td>
-                </tr>
-            </table>
-
-            <script type="text/javascript">
-                var gUserAgent = window.navigator.userAgent;
-                var gIsMicrosoftBrowser = gUserAgent.indexOf('MSIE ') > 0 || gUserAgent.indexOf('Trident/') > 0 || gUserAgent.indexOf('Edge/') > 0;
-
-                if (gIsMicrosoftBrowser) {
-                    document.getElementById("cozmoImageMicrosoftWarning").style.display = "block";
-                }
-           
-                function sendHeadValue(val) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', `headAngle/${JSON.stringify(val)}`)
-                    xhr.send()
-                }
-            </script>
-        </body>
-    </html>
-    '''
+    return render_template('Cozmo_page.html')
 
 
 def streaming_video(url_root):
@@ -172,6 +147,75 @@ def headAngle(angleValue):
     return ""
 
 
+def hexa_color_converter(color_code):
+    if color_code[0:2] == "0x" and len(color_code) == 8:
+        return int(color_code[2:4], 16), int(color_code[4:6], 16), int(color_code[6:8], 16)
+    return -1, -1, -1
+
+
+def recolor_cube(image_path, color_code, save_image_name):
+    r, g, b = hexa_color_converter(color_code)
+    if r == -1:
+        print("Bad color format")
+        return
+    red = (255, 0, 0, 255)
+    green = (0, 255, 0, 255)
+    blue = (0, 0, 255, 255)
+    image = Image.open(image_path)
+    im = np.array(image)
+
+    larg, long, coul = im.shape
+
+    for i in range(0, 30):
+        for j in range(30, 110):
+            for k in range(coul - 1):
+                if all(x == y for x, y in zip(im[i][j], green)) or all(x == y for x, y in zip(im[i][j], red)) or all(
+                        x == y for x, y in zip(im[i][j], blue)):
+                    im[i][j] = (r, g, b, 255)
+                    im[149 - i][149 - j] = (r, g, b, 255)
+                    im[j][i] = (r, g, b, 255)
+                    im[149 - j][149 - i] = (r, g, b, 255)
+            im[i][j][3] = 255
+
+    imag = Image.fromarray(im)
+    imag.save(save_image_name)
+
+
+@flask_app.route('/colorChange/', methods=['POST'])
+def colorChange():
+    arguments = request.get_json()
+
+    newColor = arguments['newColor']
+    cubeId = arguments['cubeId']
+    recolor_cube("static/images/" + cubeId + ".png", newColor, "static/temp/" + cubeId + ".png")
+    remote_control_cozmo.update_cube_color(cubeId, newColor)
+    return cubeId
+
+
+@flask_app.route('/restartProgram/', methods=['POST'])
+def restart():
+    two_hands.stop = True
+    two_hands.stop = False
+    cozmo.connect(run)
+    return "Test"
+
+
+@flask_app.after_request
+def add_header(r):
+    r.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    r.headers['Pragma'] = 'no-cache'
+    return r
+
+
+global exit_event
+exit_event = threading.Event()
+
+
+def signal_handler(signum, frame):
+    exit_event.set()
+    print('YO')
+
+
 def run(sdk_conn):
     robot = sdk_conn.wait_for_robot()
     robot.enable_device_imu(True, True, True)
@@ -182,11 +226,14 @@ def run(sdk_conn):
     robot.camera.color_image_enabled = True
 
     global remote_control_cozmo
-    remote_control_cozmo = RemoteControlCozmo(robot)
-    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot,))
+    #signal.signal(signal.SIGINT, signal_handler)
+    remote_control_cozmo = RemoteControlCozmo(robot, cb.Cubes(robot))
+    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot, remote_control_cozmo.cubes))
+    cozmoThread.setDaemon(True)
     cozmoThread.start()
 
     flask_helpers.run_flask(flask_app)
+    print(cozmoThread.is_alive())
 
 
 if __name__ == '__main__':
@@ -195,6 +242,6 @@ if __name__ == '__main__':
     try:
         cozmo.connect(run)
     except KeyboardInterrupt as e:
-        pass
+        sys.exit()
     except cozmo.ConnectionError as e:
         sys.exit("A connection error occurred: %s" % e)

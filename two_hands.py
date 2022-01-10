@@ -1,14 +1,21 @@
+import json
 import sys
-import cozmo
-import UI
-import flask_helpers
-
-import hand as hd
 import time
-import numpy as np
-import cubes as cb
-from PIL import ImageOps
 
+import cozmo
+import numpy as np
+from PIL import ImageOps
+import UI
+import cubes as cb
+import hand as hd
+
+try:
+    import requests
+except ImportError:
+    sys.exit("Cannot import from requests: Do `pip3 install --user requests` to install")
+
+global stop
+stop = False
 
 def hand_detection(robot: cozmo.robot.Robot):
     """
@@ -26,7 +33,11 @@ def hand_detection(robot: cozmo.robot.Robot):
         nbNoHand = 0
 
         # To check twice the number of fingers
-        while hand != finalTotal:
+        while hand != finalTotal and stop == False:
+
+            if UI.exit_event.is_set():
+                print('Salut')
+                return KeyboardInterrupt
 
             # Get the image of cozmo's camera
             latest_image = robot.world.latest_image
@@ -83,56 +94,65 @@ def hand_detection(robot: cozmo.robot.Robot):
                                         in_parallel=True).wait_for_completed()
                         robot.set_head_angle(currentHeadAngle, in_parallel=True).wait_for_completed()
 
-    # To detect Ctrl+C and shut down properly
+    # To detect Ctrl+F2 and shut down properly
     except KeyboardInterrupt:
-        sys.exit()
+        #sys.exit()
+        print('Ici')
 
 
-def cozmo_program(robot: cozmo.robot.Robot):
+def cozmo_program(robot: cozmo.robot.Robot, cubesArg):
     """
     This function will be executed by cozmo and handled all interactions between cozmo, cubes and the code.
 
+    :param cubesArg:
     :param robot: An instance of cozmo Robot.
     """
     # Set cozmo's head angle
     robot.set_head_angle(cozmo.robot.MAX_HEAD_ANGLE / 2, in_parallel=True).wait_for_completed()
 
-    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
-                                      cb.Cubes.on_cube_tapped)  # Essayer de le mettre autre part
+    # Set cozmo's lift height
+    if robot.lift_height.distance_mm != cozmo.robot.MIN_LIFT_HEIGHT_MM:
+        robot.set_lift_height(0.0).wait_for_completed()
 
-    cubes = cb.Cubes(robot)
+    handler = robot.add_event_handler(cozmo.objects.EvtObjectTapped,
+                                      cb.Cubes.on_cube_tapped)
+
+    cubes = cubesArg
 
     # The final result initialized
     finalResult = -1
 
     # Detect the first number
     firstNumber = hand_detection(robot)
-    print(firstNumber)
 
-    # Wait for any cubes tapped
-    print('J\'' + 'attends que tu tapes')
+    if not stop:
 
-    robot.say_text("Tape sur un cube").wait_for_completed()
-    robot.world.wait_for(cozmo.objects.EvtObjectTapped)
-    operation = cubes.cube_blinking(cubes.cube_tapped_id)
+        print(firstNumber)
 
-    # Detect the second number
-    secondNumber = hand_detection(robot)
+        # Wait for any cubes tapped
+        print('J\'' + 'attends que tu tapes')
 
-    if operation == '+':
-        finalResult = firstNumber + secondNumber
-    elif operation == '-':
-        finalResult = firstNumber - secondNumber
+        robot.say_text("Tape sur un cube").wait_for_completed()
+        robot.world.wait_for(cozmo.objects.EvtObjectTapped)  # Timeout par defaut 30 secondes
+        operation = cubes.cube_blinking(cubes.cube_tapped_id)
 
-        if finalResult < 0:
-            finalResult = "moins" + str(-finalResult)
+        # Detect the second number
+        secondNumber = hand_detection(robot)
 
-    elif operation == '*':
-        finalResult = firstNumber * secondNumber
+        if operation == '+':
+            finalResult = firstNumber + secondNumber
+        elif operation == '-':
+            finalResult = firstNumber - secondNumber
 
-    # Cozmo say the result
+            if finalResult < 0:
+                finalResult = "moins" + str(-finalResult)
 
-    robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}',
-                   in_parallel=True).wait_for_completed()
+        elif operation == '*':
+            finalResult = firstNumber * secondNumber
 
-    print(finalResult)
+        # Cozmo say the result
+
+        robot.say_text(f'{firstNumber}' + operation + f'{secondNumber}' + "=" + f'{finalResult}',
+                       in_parallel=True).wait_for_completed()
+
+        print(finalResult)
