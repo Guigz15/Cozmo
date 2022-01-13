@@ -147,31 +147,18 @@ footer > ul {
 footer > ul > li {
     display: flex;
     flex-direction: column;
+    align-items: center;
     margin: 0.5em;
     flex: 1;
 }
 
-footer > ul > li:first-child > p {
-    text-align: center;
-    font-size: xx-large;
-    font-weight: bold;
-}
-
-footer > ul > li:nth-child(2) > p {
-    text-align: center;
-    font-size: xx-large;
-    font-weight: bold;
-}
-
-footer > ul > li:nth-child(3) {
-    justify-content: center;
-}
-
-footer > ul > li:nth-child(3) > button {
+footer > ul > li:first-child > button {
     transition: .4s ease-in;
+    width: 50%;
+    margin-top: 3em;
 }
 
-footer > ul > li:nth-child(3) > button:hover {
+footer > ul > li:first-child > button:hover {
     border: 2px solid #F05454;
     color: #F05454;
     background-color: #30475E;
