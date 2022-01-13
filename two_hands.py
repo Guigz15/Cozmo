@@ -4,7 +4,6 @@ import time
 import cozmo
 import numpy as np
 from PIL import ImageOps
-
 import cubes as cb
 import hand as hd
 
@@ -31,7 +30,6 @@ def hand_detection(robot: cozmo.robot.Robot):
 
         # To check twice the number of fingers
         while hand != finalTotal:
-
             # Get the image of cozmo's camera
             latest_image = robot.world.latest_image
 

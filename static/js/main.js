@@ -26,7 +26,6 @@ function sendChangeColorRequest(newColor, cubeId) {
 
 function relaunchCozmoProgram() {
     const xhr = new XMLHttpRequest();
-
     xhr.open('POST', `reload`)
     xhr.send()
 }

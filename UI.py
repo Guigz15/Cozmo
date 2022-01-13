@@ -54,6 +54,7 @@ def create_default_image(image_width, image_height, do_gradient=False):
 
 flask_app = Flask(__name__)
 remote_control_cozmo = None
+robot = None
 _default_camera_image = create_default_image(320, 240)
 
 
@@ -180,7 +181,8 @@ def shutdown():
 
 @flask_app.route('/reload', methods=['POST'])
 def reload():
-    print("RELOAD")
+    cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot, remote_control_cozmo.cubes), daemon=True)
+    cozmoThread.start()
     return ""
 
 
@@ -263,14 +265,6 @@ def colorChange():
     return cubeId
 
 
-@flask_app.route('/restartProgram/', methods=['POST'])
-def restart():
-    two_hands.stop = True
-    two_hands.stop = False
-    cozmo.connect(run)
-    return "Test"
-
-
 @flask_app.after_request
 def add_header(r):
     r.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -279,6 +273,7 @@ def add_header(r):
 
 
 def run(sdk_conn):
+    global robot
     robot = sdk_conn.wait_for_robot()
     robot.enable_device_imu(True, True, True)
 
@@ -288,8 +283,8 @@ def run(sdk_conn):
     robot.camera.color_image_enabled = True
 
     global remote_control_cozmo
-
     remote_control_cozmo = RemoteControlCozmo(robot, cb.Cubes(robot))
+
     cozmoThread = Thread(target=two_hands.cozmo_program, args=(robot, remote_control_cozmo.cubes), daemon=True)
     cozmoThread.start()
 

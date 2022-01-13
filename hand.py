@@ -23,10 +23,6 @@ def detectHandsLandmarks(image, hands):
     # Create a copy of the input image to draw landmarks on.
     output_image = image.copy()
 
-    '''
-    # Convert the image from BGR into RGB format.
-    imgRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    '''
     # Perform the Hands Landmarks Detection.
     results = hands.process(image)
 
