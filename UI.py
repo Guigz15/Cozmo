@@ -206,9 +206,8 @@ def hexa_color_converter(color_code):
     :param color_code: Hex code color.
     :return: An absurd value to detect error.
     """
-
-    if color_code[0:2] == "0x" and len(color_code) == 8:
-        return int(color_code[2:4], 16), int(color_code[4:6], 16), int(color_code[6:8], 16)
+    if color_code[0] == "#" and len(color_code) == 7:
+        return int(color_code[1:3], 16), int(color_code[3:5], 16), int(color_code[5:7], 16)
     return -1, -1, -1
 
 

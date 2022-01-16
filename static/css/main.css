@@ -127,11 +127,6 @@ main > ul > li > ol > li > section > div {
     flex: 1;
 }
 
-main > ul > li > ol > li > section > button:hover {
-    border: 2px solid #F05454;
-    color: #F05454;
-    background-color: #30475E;
-}
 
 /*
 FOOTER
