@@ -7,6 +7,8 @@ Setting up your environment
 | You will find explanations about installation and also some SDK examples or documentation around the Cozmo's library.
 |
 
+-----------
+
 """""""""""""""""""
 Flask installation
 """""""""""""""""""
