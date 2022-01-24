@@ -101,11 +101,11 @@ class RemoteControlCozmo:
 
         if cubeId == "Cozmo_cube_substract":
             self.cube2.set_lights(color)
-            self.cubes.cube2 = color
+            self.cubes.cube2_color = color
 
         if cubeId == "Cozmo_cube_multiply":
             self.cube3.set_lights(color)
-            self.cubes.cube3 = color
+            self.cubes.cube3_color = color
 
 
 @flask_app.route("/")
